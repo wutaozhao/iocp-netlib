@@ -1,0 +1,13 @@
+.vs/
+output/
+Debug/
+Release/
+x64/
+Win32/
+
+*.obj
+*.lib
+*.pdb
+*.ilk
+*.user
+*.suo
