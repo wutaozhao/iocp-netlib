@@ -26,7 +26,6 @@ applications.
 
 ## Project Structure
 iocp-netlib/
-│
 ├── Baselib/ # Base utilities and infrastructure
 ├── Netlib/ # IOCP network implementation
 ├── include/ # Public headers
