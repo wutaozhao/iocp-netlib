@@ -25,11 +25,13 @@ applications.
 ---
 
 ## Project Structure
+
+```text
 iocp-netlib/
-├── Baselib/ # Base utilities and infrastructure
-├── Netlib/ # IOCP network implementation
-├── include/ # Public headers
-├── VS2022/ # Visual Studio 2022 solution and projects
+├── Baselib/        # Base utilities and infrastructure
+├── Netlib/         # IOCP network implementation
+├── include/        # Public headers
+├── VS2022/         # Visual Studio 2022 solution and projects
 ├── .gitignore
 └── README.md
 
