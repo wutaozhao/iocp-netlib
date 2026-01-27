@@ -117,7 +117,11 @@ void TcpAcceptor::PostCancel()
 	//
 	if (!mSocket.IsInvalid())
 	{
+#if (_WIN32_WINNT >= 0x0600)
 		CancelIoEx((HANDLE)mSocket.GetHandle(), NULL);
+#else
+		mSocket.Close();
+#endif
 	}
 	else {
 		pService->Log(LOG_LEVEL_ERROR, "acceptor socket invalid");

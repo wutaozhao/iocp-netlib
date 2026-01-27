@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Baselib", "Baselib\Baselib.vcproj", "{9BD3A4A7-43CC-4BB5-BAED-FF408CA2781D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Netlib", "Netlib\Netlib.vcproj", "{D12A2C82-442C-4AA9-B32A-F4703398D5DF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9BD3A4A7-43CC-4BB5-BAED-FF408CA2781D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9BD3A4A7-43CC-4BB5-BAED-FF408CA2781D}.Debug|Win32.Build.0 = Debug|Win32
+		{9BD3A4A7-43CC-4BB5-BAED-FF408CA2781D}.Release|Win32.ActiveCfg = Release|Win32
+		{9BD3A4A7-43CC-4BB5-BAED-FF408CA2781D}.Release|Win32.Build.0 = Release|Win32
+		{D12A2C82-442C-4AA9-B32A-F4703398D5DF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D12A2C82-442C-4AA9-B32A-F4703398D5DF}.Debug|Win32.Build.0 = Debug|Win32
+		{D12A2C82-442C-4AA9-B32A-F4703398D5DF}.Release|Win32.ActiveCfg = Release|Win32
+		{D12A2C82-442C-4AA9-B32A-F4703398D5DF}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

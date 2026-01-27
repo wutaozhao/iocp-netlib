@@ -171,9 +171,17 @@ void TcpService::StopNetService()
 	if (mTcpAcceptor != NULL && mReleaeseAcceptorEvent != NULL) {
 		mTcpAcceptor->PostCancel();
 		// here we don't delete mTcpAcceptor, delete it on iocp worker thread
+#if (_WIN32_WINNT >= 0x0600)
 		Log(LOG_LEVEL_INFO, "begin wait releas acceptor, time:%llu", GetTickCount64());
+#else
+		Log(LOG_LEVEL_INFO, "begin wait releas acceptor, time:%u", GetTickCount());
+#endif
 		WaitForSingleObject(mReleaeseAcceptorEvent, 1000);
+#if (_WIN32_WINNT >= 0x0600)
 		Log(LOG_LEVEL_INFO, "finish wait releas acceptor, time:%llu", GetTickCount64());
+#else
+		Log(LOG_LEVEL_INFO, "finish wait releas acceptor, time:%u", GetTickCount());
+#endif
 		CloseHandle(mReleaeseAcceptorEvent);
 		mReleaeseAcceptorEvent = NULL;
 		mTcpAcceptor = NULL;
@@ -290,8 +298,9 @@ void TcpService::MakeLog(int srvID, unsigned short port, int logLevel)
 	localtime_s(&pNow, &ulNow);
 
 	char  szTimeBuffer[256] = { 0 };
-	snprintf(szTimeBuffer,
+	_snprintf_s(szTimeBuffer,
 		255,
+		_TRUNCATE,
 		"%04d%02d%02d%02d%02d%02d_%d_%d.log",
 		pNow.tm_year + 1900,
 		pNow.tm_mon + 1,
@@ -590,14 +599,23 @@ void TcpService::checkStatus()
 	bool hasClientNotReleased = false;
 	do
 	{
-		uint64_t now = GetTickCount64();
+#if (_WIN32_WINNT >= 0x0600)
+		unsigned long long now = GetTickCount64();
+#else
+		unsigned int now = GetTickCount();
+#endif
 		LOCK_GUARD(mTcpClientPoolLock);
 		TcpClientMap::iterator itor = mTcpClientMap.begin();
 		while (itor != mTcpClientMap.end()) {
 			if (!itor->second->IsAccepting()) {
 				hasClientNotReleased = true;
 				if (mListenPort != 0) {
+#if (_WIN32_WINNT >= 0x0600)
 					if ((now > itor->second->mLastTickTime) && (now - itor->second->mLastTickTime) > (mClientTimeoutSec * 1000))
+#else
+					if ((now > itor->second->mLastTickTime) && GetMsInterval(now, itor->second->mLastTickTime) > (mClientTimeoutSec * 1000))
+#endif
+					
 					{
 						itor->second->SetTimeout();
 						mStats["Timeout"]++;

@@ -1819,7 +1819,7 @@ bool CADOParameter::SetValue(string strValue)
 	try
 	{
 		if(m_pParameter->Size == 0)
-			m_pParameter->Size = sizeof(char) * strValue.length();
+			m_pParameter->Size = (long)sizeof(char) * (long)strValue.length();
 
 		m_pParameter->Value = vtVal;
 		::SysFreeString(vtVal.bstrVal);

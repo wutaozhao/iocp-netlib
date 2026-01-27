@@ -167,7 +167,11 @@ bool LogManager::SetLogLevel(const char* pszLogName, unsigned int nLogLevel)
 		LogFileObject logFileObject;
 		logFileObject.pFileHandle = pFile;
 		logFileObject.nLogLevel = nLogLevel;
+#if (_WIN32_WINNT >= 0x0600)
 		logFileObject.lastCheckTime = GetTickCount64();
+#else
+		logFileObject.lastCheckTime = GetTickCount();
+#endif
 
 		//
 		LOCK_GUARD(m_threadLock);
@@ -269,16 +273,23 @@ void LogManager::_write(LogCell* cell)
 			struct tm tNow;
 			localtime_s(&tNow, &ulNow);
 
-			unsigned long long now = GetTickCount64();
 			// each 10 seconds to check rename file
+#if (_WIN32_WINNT >= 0x0600)
+			unsigned long long now = GetTickCount64();
 			if (now > itor->second.lastCheckTime && (now - itor->second.lastCheckTime) > (10 * 1000))
+#else
+			unsigned long now = GetTickCount();
+			if (GetMsInterval(now, itor->second.lastCheckTime) > 10 * 1000)
+#endif
 			{
 				int nSize = ftell(itor->second.pFileHandle);
 				if (nSize > 10 * 1024 * 1024) {
 					fclose(itor->second.pFileHandle);
 
+					itor->second.lastCheckTime = now;
+
 					char tmpTimeBuffer[256] = { 0 };
-					snprintf(tmpTimeBuffer, 255, "%04d_%02d_%02d_%02d_%02d_%02d", tNow.tm_year + 1900,
+					_snprintf_s(tmpTimeBuffer, 255, _TRUNCATE, "%04d_%02d_%02d_%02d_%02d_%02d", tNow.tm_year + 1900,
 						tNow.tm_mon + 1,
 						tNow.tm_mday,
 						tNow.tm_hour,
@@ -286,10 +297,10 @@ void LogManager::_write(LogCell* cell)
 						tNow.tm_sec);
 
 					char oldFileName[MAX_PATH] = { 0 };
-					snprintf(oldFileName, MAX_PATH - 1, "%s%s", m_strLogDir.c_str(), cell->name);
+					_snprintf_s(oldFileName, MAX_PATH - 1, _TRUNCATE, "%s%s", m_strLogDir.c_str(), cell->name);
 
 					char newPath[MAX_PATH] = { 0 };
-					snprintf(newPath, MAX_PATH - 1, "%s%s_%s", m_strLogDir.c_str(), tmpTimeBuffer, cell->name);
+					_snprintf_s(newPath, MAX_PATH - 1, _TRUNCATE, "%s%s_%s", m_strLogDir.c_str(), tmpTimeBuffer, cell->name);
 
 					if (rename(oldFileName, newPath) == 0) {
 						itor->second.pFileHandle = _fsopen(oldFileName, "wb", _SH_DENYNO);
@@ -303,8 +314,8 @@ void LogManager::_write(LogCell* cell)
 
 			char szBuffer[10240] = { 0 };
 			// [DateTime] [ProcessID] [ThreadID][LEVELINFO]: CONTENT
-			snprintf(szBuffer,
-				sizeof(szBuffer) - 1,
+			_snprintf_s(szBuffer,
+				sizeof(szBuffer) - 1, _TRUNCATE,
 				"[%04d-%02d-%02d %02d:%02d:%02d][%d][%d][%d:%s] %s\r\n",
 				tNow.tm_year + 1900,
 				tNow.tm_mon + 1,
@@ -325,7 +336,7 @@ void LogManager::_write(LogCell* cell)
 
 			szBuffer[10240 - 1] = '\0';
 
-			int nWirte = fwrite(szBuffer, 1, strlen(szBuffer), itor->second.pFileHandle);
+			fwrite(szBuffer, 1, strlen(szBuffer), itor->second.pFileHandle);
 			fflush(itor->second.pFileHandle);
 		}
 	} while (false);

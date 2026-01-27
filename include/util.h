@@ -155,6 +155,7 @@ public:
 	bool IsTimed()
 	{
 #ifdef _WIN32
+#if (_WIN32_WINNT >= 0x0600)
 		unsigned long long now = GetTickCount64();
 		if ((now - m_nLastMillTime) >= m_nMillTimeout)
 		{
@@ -162,6 +163,16 @@ public:
 			return true;
 		}
 		return false;
+#else
+		unsigned int now = GetTickCount();
+		unsigned int itv = GetMsInterval(now, m_nLastMillTime);
+		if( itv >= m_nMillTimeout )
+		{
+			m_nLastMillTime = now;
+			return true;
+		}
+		return false;
+#endif
 #else
 		unsigned long long nMillSecond = GetCurrMsTime();
 		if (nMillSecond - m_nLastMillTime >= m_nMillTimeout)
@@ -176,7 +187,11 @@ public:
 	void SetTimer(unsigned int nMillTimeout)
 	{
 #ifdef _WIN32
+  #if (_WIN32_WINNT >= 0x0600)
 		m_nLastMillTime = GetTickCount64();
+  #else
+		m_nLastMillTime = GetTickCount();
+  #endif
 #else
 		m_nLastMillTime = GetCurrMsTime();
 #endif
@@ -184,10 +199,14 @@ public:
 	}
 
 private:
-	unsigned long long m_nMillTimeout;
-
 #ifdef _WIN32
+  #if (_WIN32_WINNT >= 0x0600)
+	unsigned long long m_nMillTimeout;
 	unsigned long long m_nLastMillTime;
+  #else
+	unsigned int       m_nMillTimeout;
+	unsigned int       m_nLastMillTime;
+  #endif
 #else
 	unsigned long long m_nLastMillTime;
 #endif

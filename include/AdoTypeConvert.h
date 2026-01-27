@@ -525,14 +525,14 @@ template <> inline bool VariantToT<string>(_variant_t& value, string& tValue)
 	case VT_I8:
 		{
 			char szBuf[256] = { 0 };
-			snprintf(szBuf, 255, "%lld", value.llVal);
+			_snprintf_s(szBuf, 255, _TRUNCATE, "%lld", value.llVal);
 			tValue = szBuf;
 		}
 		break;
 	case VT_UI8:
 		{
 			char szBuf[256] = { 0 };
-			snprintf(szBuf, 255, "%llu", value.ullVal);
+			_snprintf_s(szBuf, 255, _TRUNCATE, "%llu", value.ullVal);
 			tValue = szBuf;
 		}
 		break;

@@ -6,7 +6,6 @@
 #include "TcpService.h"
 #include "TcpAcceptor.h"
 #include "TcpClient.h"
-#include <thread>
 
 WT_BEGIN
 
@@ -98,7 +97,7 @@ void NetCoreIOCP::UnInitialize()
 {
 	//
 	if (NULL != mIOCPHandle) {
-		int count = mThreads.size();
+		int count = (int)mThreads.size();
 		for (int i = 0; i < count; i++) {
 			// create event
 			PostQueuedCompletionStatus(mIOCPHandle, 0, NULL, NULL);
@@ -232,8 +231,9 @@ void NetCoreIOCP::MakeLog()
 		localtime_s(&tNow, &ulNow);
 
 		char  szTimeBuffer[256] = { 0 };
-		snprintf(szTimeBuffer,
+		_snprintf_s(szTimeBuffer,
 			255,
+			_TRUNCATE,
 			"%04d_%02d_%02d_%02d_%02d_%02d",
 			tNow.tm_year + 1900,
 			tNow.tm_mon + 1,

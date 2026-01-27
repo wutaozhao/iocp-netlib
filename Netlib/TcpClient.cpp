@@ -48,7 +48,12 @@ void TcpClient::Reset()
 	mPendingIO = 0;
 	mConnState = CONN_CLOSED;
 	mReferenceCount = 0;
+	
+#if (_WIN32_WINNT >= 0x0600)
 	mLastTickTime = GetTickCount64();
+#else
+	mLastTickTime = GetTickCount();
+#endif
 	memset(&mRecvContext, 0, sizeof(mRecvContext));
 	mRecvPacketBuffer = NULL;
 	mRecvBytes = 0;
@@ -76,7 +81,6 @@ void TcpClient::CancelIO()
 	//
 	if (!mSocket.IsInvalid())
 	{
-		CancelIoEx((HANDLE)mSocket.GetHandle(), NULL);
 		mSocket.Shutdown();
 		mSocket.Close();
 	}
@@ -137,7 +141,11 @@ int TcpClient::PostSpecial(int opType)
 		ct->mOperationType = opType;
 		ct->mTcpClient = this;
 		ct->mTcpService = mTcpService;
+#if (_WIN32_WINNT >= 0x0600)
 		ct->mTime = GetTickCount64();
+#else
+		ct->mTime = GetTickCount();
+#endif
 
 		if (!PostQueuedCompletionStatus(mTcpService->GetCore()->GetIOCPHandle(),
 			0,
@@ -171,7 +179,11 @@ bool TcpClient::CreateSocket()
 void TcpClient::SetRecvContextToAccept()
 {
 	mRecvContext.mOperationType = IOCP_OP_ACCEPT;
+#if (_WIN32_WINNT >= 0x0600)
 	mRecvContext.mTime = GetTickCount64();
+#else
+	mRecvContext.mTime = GetTickCount();
+#endif
 	mRecvContext.mTcpClient = this;
 	mRecvContext.mTcpService = mTcpService;
 	mRecvContext.mBuffer.buf = mRecvBuffer;
@@ -185,7 +197,11 @@ void TcpClient::SetRecvContextToRecv()
 	mRecvContext.mBuffer.len = TCP_CLIENT_RECV_BUFF_SIZE;
 	mRecvContext.mTcpClient = this;
 	mRecvContext.mTcpService = mTcpService;
+#if (_WIN32_WINNT >= 0x0600)
 	mRecvContext.mTime = GetTickCount64();
+#else
+	mRecvContext.mTime = GetTickCount();
+#endif
 }
 
 void TcpClient::SetRecvContextToConnect()
@@ -195,7 +211,11 @@ void TcpClient::SetRecvContextToConnect()
 	mRecvContext.mBuffer.len = TCP_CLIENT_RECV_BUFF_SIZE;
 	mRecvContext.mTcpClient = this;
 	mRecvContext.mTcpService = mTcpService;
+#if (_WIN32_WINNT >= 0x0600)
 	mRecvContext.mTime = GetTickCount64();
+#else
+	mRecvContext.mTime = GetTickCount();
+#endif
 }
 
 bool TcpClient::GetPeerAddrInfo()
@@ -500,7 +520,11 @@ int TcpClient::SplitPacket(char* pData, int dataLen)
 
 void TcpClient::UpdateLastTickTime()
 {
+#if (_WIN32_WINNT >= 0x0600)
 	mLastTickTime = GetTickCount64();
+#else
+	mLastTickTime = GetTickCount();
+#endif
 }
 
 bool TcpClient::IsAccepting()
@@ -514,11 +538,15 @@ bool TcpClient::PostConnect(const char* ip, unsigned short port)
 
 	do
 	{
+		#if (_WIN32_WINNT >= 0x0600)
 		if (inet_pton(AF_INET, ip, &mRemoteIP) != 1)
 		{
 			mTcpService->Log(LOG_LEVEL_ERROR, "TcpClient::PostConnect invalid ip format:%s", ip);
 			return false;
 		}
+        #else
+		mRemoteIP = inet_addr(ip);
+        #endif
 		mRemotePort = port;
 
 		int ret = mTcpService->GetCore()->AttachSocketToIOCP(mSocket.GetHandle(), (ULONG_PTR)this);

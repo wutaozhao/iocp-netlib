@@ -33,7 +33,11 @@ struct LogFileObject
 
 	FILE*               pFileHandle;
 	unsigned int        nLogLevel;
+#if (_WIN32_WINNT >= 0x0600)
 	unsigned long long  lastCheckTime;
+#else
+	unsigned int lastCheckTime;
+#endif
 };
 
 #pragma pack(1)

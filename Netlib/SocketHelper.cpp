@@ -73,10 +73,14 @@ bool SocketHelper::Bind(unsigned short port, const char* ip)
 
 	SOCKADDR_IN sAddr;
 	sAddr.sin_family = AF_INET;
+#if (_WIN32_WINNT >= 0x0600)
 	if (inet_pton(AF_INET, ip, &sAddr.sin_addr) != 1)
 	{
 		return false;
 	}
+#else
+	sAddr.sin_addr.s_addr = inet_addr(ip);
+#endif
 	sAddr.sin_port = ::htons(port);
 	if (::bind(mSocket, (PSOCKADDR)&sAddr, sizeof(sAddr)) == SOCKET_ERROR)
 	{

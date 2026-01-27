@@ -90,7 +90,11 @@ public:
 	volatile long  mConnState;
 
 	IOContext      mRecvContext;
+#if (_WIN32_WINNT >= 0x0600)
 	unsigned long long  mLastTickTime;
+#else
+	unsigned long       mLastTickTime;
+#endif
 	SocketHelper   mSocket;
 
 	unsigned long  mRemoteIP;

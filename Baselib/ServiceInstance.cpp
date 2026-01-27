@@ -75,7 +75,7 @@ const char* CServiceInstance::GetLogPath()
 	localtime_s(&tNow, &ulNow);
 
 	char  szTimeBuffer[64] = {0};
-	snprintf(szTimeBuffer, 63,
+	_snprintf_s(szTimeBuffer, 63, _TRUNCATE,
 		"%04d_%02d_%02d_%02d_%02d_%02d",
 		tNow.tm_year + 1900,
 		tNow.tm_mon + 1,
