@@ -22,7 +22,7 @@ public:
 	TcpService();
 	virtual ~TcpService();
 
-	int StartNetService(int srvID,
+	int StartNetService(
 		const char* ip,
 		unsigned short listenPort,
 		int listenBacklog,
@@ -116,6 +116,7 @@ private:
 	NetCore*     mNetCore;
 	TcpAcceptor* mTcpAcceptor;
 	HANDLE       mReleaeseAcceptorEvent;
+	int          mServiceID;
 
 	std::string    mLogFileName;
 

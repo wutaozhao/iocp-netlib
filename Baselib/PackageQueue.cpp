@@ -61,11 +61,7 @@ PackageQueue::PackageQueue():m_pool(0)
 
 PackageQueue::~PackageQueue()
 {
-	LOCK_GUARD(m_poolLock);
-	if (m_pool != NULL) {
-		delete m_pool;
-		m_pool = NULL;
-	}
+	Uninit();
 }
 
 int PackageQueue::Init(size_t maxPacketPayload,
@@ -81,6 +77,15 @@ int PackageQueue::Init(size_t maxPacketPayload,
 	}
 
 	return 1;
+}
+
+void PackageQueue::Uninit()
+{
+	LOCK_GUARD(m_poolLock);
+	if (m_pool != NULL) {
+		delete m_pool;
+		m_pool = NULL;
+	}
 }
 
 bool PackageQueue::AllocWritePacket(PacketWrite& pw)

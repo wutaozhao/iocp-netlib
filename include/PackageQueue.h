@@ -70,6 +70,8 @@ public:
 
 	int Init(size_t maxPacketPayload, size_t maxPackets);
 
+	void Uninit();
+
 	bool AllocWritePacket(PacketWrite& pw);
 
 	bool Push(PacketWrite& pw);

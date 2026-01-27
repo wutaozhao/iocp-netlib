@@ -7,7 +7,7 @@
 
 WT_BEGIN
 
-TcpService::TcpService()
+TcpService::TcpService():mServiceID(0)
 {
 	mNetCore = NULL;
 	mTcpClientPoolPtr = NULL;
@@ -53,7 +53,6 @@ TcpService::~TcpService()
 }
 
 int TcpService::StartNetService(
-	int srvID,
 	const char* ip,
 	unsigned short listenPort,
 	int listenBacklog,
@@ -73,9 +72,16 @@ int TcpService::StartNetService(
 
 	do
 	{
+		Log(LOG_LEVEL_INFO, "begin init service");
+		mMarkedStop = false;
+		mStopCheckStatusThread = false;
 		mNetCore = netCore;
 		//
-		MakeLog(srvID, listenPort, logLevel);
+		if (mServiceID == 0) {
+			// increment
+			mServiceID = reinterpret_cast<NetCoreIOCP*>(mNetCore->GetCore())->GetNextServiceID();
+			MakeLog(mServiceID, listenPort, logLevel);
+		}
 
 		mListenPort = listenPort;
 		mMaxConnection = maxConnection;
@@ -112,6 +118,8 @@ int TcpService::StartNetService(
 			ret = NSE_SYSTEM_ERROR;
 			break;
 		}
+
+		Log(LOG_LEVEL_INFO, "init service will check listen port");
 
 		if (listenPort == 0)
 			break;
@@ -158,6 +166,7 @@ void TcpService::StopNetService()
 
 	Log(LOG_LEVEL_INFO, "begin stop net service");
 
+	mStopCheckStatusThread = true;
 	mMarkedStop = true;
 	if (mTcpAcceptor != NULL && mReleaeseAcceptorEvent != NULL) {
 		mTcpAcceptor->PostCancel();
@@ -170,21 +179,31 @@ void TcpService::StopNetService()
 		mTcpAcceptor = NULL;
 	}
 
-	bool hasClientNotReleased = false;
+	Log(LOG_LEVEL_INFO, "begin cancel all client");
 	{
 		LOCK_GUARD(mSendIOContextPoolLock);
 		TcpClientMap::iterator itor = mTcpClientMap.begin();
 		while (itor != mTcpClientMap.end() && !itor->second->IsAccepting()) {
 			itor->second->CancelIO();
-			hasClientNotReleased = true;
 			++itor;
 		}
 	}
 
-	if (!hasClientNotReleased) {
-		ReleaseAllPool();
-		mStopCheckStatusThread = true;
+	CTimer exitTimer;
+	exitTimer.SetTimer(600);
+	while (!exitTimer.IsTimed()) {
+		LOCK_GUARD(mSendIOContextPoolLock);
+		if (mTcpClientMap.size() == 0)
+		{
+			Log(LOG_LEVEL_INFO, "begin cancel all client");
+			break;
+		}
+		else {
+			Sleep(100);
+		}
 	}
+
+	ReleaseAllPool();
 }
 
 void TcpService::OnAcceptorReleased()
@@ -560,7 +579,7 @@ void TcpService::CheckStatusProc()
 			logStats();
 		}
 		else {
-			Sleep(500);
+			Sleep(100);
 		}
 	}
 	Log(LOG_LEVEL_INFO, "TcpService::CheckStatusProc() stop");
@@ -597,10 +616,12 @@ void TcpService::checkStatus()
 		}
 	} while (false);
 	
+	/*
 	if (!hasClientNotReleased && mMarkedStop) {
 		ReleaseAllPool();
 		mStopCheckStatusThread = true;
 	}
+	*/
 }
 
 int  TcpService::GetClientPoolUsed()

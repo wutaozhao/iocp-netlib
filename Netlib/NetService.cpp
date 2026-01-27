@@ -61,16 +61,13 @@ int NetService::StartNetService(
 			break;
 		}
 
-		// increment
-		int srvID = reinterpret_cast<NetCoreIOCP*>(mNetCore->GetCore())->GetNextServiceID();
-
 		TcpService* service = reinterpret_cast<TcpService*>(mService);
 		if (!service) {
 			LogS(mNetCore, LOG_LEVEL_ERROR, "NetService::StartNetService convert service failed");
 			ret = NSE_SYSTEM_ERROR;
 			break;
 		}
-		ret = service->StartNetService(srvID, ip, listenPort, listenBacklog, maxConnection,
+		ret = service->StartNetService(ip, listenPort, listenBacklog, maxConnection,
 			maxSendPacketSize, sendQueueSize, maxRecvPacketSize, 
 			recvQueueSize, packetSizeOffset, clientTimeoutSec, logLevel, netCore, callback);
 		if (ret != 0) {
