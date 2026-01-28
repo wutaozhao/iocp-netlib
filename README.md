@@ -30,12 +30,16 @@ applications.
 iocp-netlib/
 ├── Baselib/        # Base utilities and infrastructure
 ├── Netlib/         # IOCP network implementation
+├── TestClient/     # Test Client
+├── TestServer/     # Test Server
 ├── include/        # Public headers
 ├── VS2005/         # Visual Studio 2005 solution and projects
 ├── VS2022/         # Visual Studio 2022 solution and projects
 ├── .gitignore
 └── README.md
 ```
+When you use the lib in server, you don't need main function, because the Baselib contains main function.
+Or you can define _WT_NO_MAIN to use your own main funciton.
 ---
 
 ## Requirements
