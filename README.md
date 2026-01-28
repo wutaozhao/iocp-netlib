@@ -38,8 +38,8 @@ iocp-netlib/
 ├── .gitignore
 └── README.md
 ```
-When you use the lib in server, you don't need main function, because the Baselib contains main function.
-Or you can define _WT_NO_MAIN to use your own main funciton.
+-When you use the lib in server, you don't need main function, because the Baselib contains main function.
+-Or you can define _WT_NO_MAIN to use your own main funciton.
 ---
 
 ## Requirements
