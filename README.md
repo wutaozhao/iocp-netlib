@@ -38,8 +38,6 @@ iocp-netlib/
 ├── .gitignore
 └── README.md
 ```
-- When you use the lib in server, you don't need main function, because the Baselib contains main function.
-- Or you can define _WT_NO_MAIN to use your own main funciton.
 ---
 
 ## Requirements
@@ -74,6 +72,10 @@ The output will be static libraries:
 - `BaseLib.lib`
 - `NetLib.lib`
 3. Ensure your project uses the same runtime library settings (`/MT` or `/MTd`).
+4. When you use the lib in server, you don't need main function, because the Baselib contains main function. Or 
+   you can define _WT_NO_MAIN to use your own main funciton.
+5. Run the TestServer in cmd as "TestServer.exe -d".
+6. Use "TestServer.exe -i" to install as service and "TestrServer.exe -u" to remove service.
 
 NetLib depends on BaseLib and must be linked after it.
 
