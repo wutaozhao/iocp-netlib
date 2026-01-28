@@ -11,8 +11,8 @@ const int TCP_CLIENT_RECV_BUFF_SIZE = 4096;
 enum TcpConnState
 {
 	CONN_CLOSED = 0,
-	CONN_CONNECTED,   // 正常通信
-	CONN_CLOSING,      // 已请求关闭，等待 I/O 回收
+	CONN_CONNECTED,   
+	CONN_CLOSING,      
 };
 
 class TcpService;

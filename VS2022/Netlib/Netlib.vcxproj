@@ -119,6 +119,11 @@
       <AdditionalDependencies>
       </AdditionalDependencies>
     </Lib>
+    <PostBuildEvent>
+      <Command>xcopy /E /Y /I /D "E:\Code\github\MyLibs\output\vs2022\x86" "E:\Code\7FGame_Projects\7FGame_PlatformSrv\7FGSystemNew\QFPlatServersV2\SDK\Newlib\libs\VS2022\x86"
+xcopy /E /Y /I /D "E:\Code\github\MyLibs\include" "E:\Code\7FGame_Projects\7FGame_PlatformSrv\7FGSystemNew\QFPlatServersV2\SDK\Newlib\include"
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -146,6 +151,11 @@
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
     </Lib>
+    <PostBuildEvent>
+      <Command>xcopy /E /Y /I /D "E:\Code\github\MyLibs\output\vs2022\x86" "E:\Code\7FGame_Projects\7FGame_PlatformSrv\7FGSystemNew\QFPlatServersV2\SDK\Newlib\libs\VS2022\x86"
+xcopy /E /Y /I /D "E:\Code\github\MyLibs\include" "E:\Code\7FGame_Projects\7FGame_PlatformSrv\7FGSystemNew\QFPlatServersV2\SDK\Newlib\include"
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

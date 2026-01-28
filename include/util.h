@@ -139,6 +139,19 @@ inline void Sleep(int a)
 }
 #endif
 
+inline DWORD ConverOleTimeTo_CTime(double nOleTime)
+{
+	COleDateTime oleTime(nOleTime);
+	SYSTEMTIME sysTime = {0};
+	int nCode = VariantTimeToSystemTime(oleTime, &sysTime);
+	if (nCode == 0)
+		return 1;
+
+	CTime tm(sysTime);
+
+	return (DWORD)tm.GetTime();
+}
+
 class CTimer
 {
 public:
@@ -198,7 +211,6 @@ public:
 		m_nMillTimeout = nMillTimeout;
 	}
 
-private:
 #ifdef _WIN32
   #if (_WIN32_WINNT >= 0x0600)
 	unsigned long long m_nMillTimeout;

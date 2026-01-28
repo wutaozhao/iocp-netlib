@@ -7,7 +7,7 @@
 #include "IOContext.h"
 #include "util.h"
 #include "TcpClient.h"
-#include "ObjectPool.h"
+#include "ObjectCache.h"
 #include "SnmpStatistic.h"
 #include "Semaphore.h"
 #include "NetCoreIOCP.h"
@@ -27,10 +27,7 @@ public:
 		unsigned short listenPort,
 		int listenBacklog,
 		int maxConnection,
-		int maxSendPacketSize,
-		int sendQueueSize,
-		int maxRecvPacketSize,
-		int recvQueueSize,
+		int maxPacketSize,
 		int packetSizeOffset,
 		int clientTimeoutSec,
 		int logLevel,
@@ -77,14 +74,14 @@ public:
 
 protected:
 
-	int CreateAllPool();
-	void ReleaseAllPool();
+	int CreateAllCache();
+	void ReleaseAllCache();
 
-	int CreateTcpClientPool(int maxConnection);
-	int CreateSendIOContextPool(int sendQueueSize);
-	int CreateSendPacketPool(int sendQueueSize, int maxSendPacketSize);
-	int CreateRecvPacketPool(int recvQueueSize, int maxRecvPacketSize);
-	int CreateExceptionContextPool();
+	int CreateTcpClientCache(int maxConnection);
+	int CreateSendIOContextCache(int sendQueueSize);
+	int CreateSendPacketCache(int sendQueueSize, int maxSendPacketSize);
+	int CreateRecvPacketCache(int recvQueueSize, int maxRecvPacketSize);
+	int CreateExceptionContextCache();
 
 	void CheckStatusProc();
 
@@ -92,21 +89,18 @@ private:
 	void MakeLog(int srvID, unsigned short port, int logLevel);
 	void checkStatus();
 	void logStats();
-	int  GetClientPoolUsed();
-	int  GetSendIOContextPoolUsed();
-	int  GetSendPoolUsed();
-	int  GetRecvPoolUsed();
-	int  GetExceptionPoolUsed();
+	int  GetClientCacheUsed();
+	int  GetSendIOContextCacheUsed();
+	int  GetSendCacheUsed();
+	int  GetRecvCacheUsed();
+	int  GetExceptionCacheUsed();
 
 public:
 	// callback
 	IIOCallback*   mIOCallbackPtr;
 	int            mMaxConnection;
-	int            mMaxSendPacketSize;
-	int            mSendQueueSize;
-	int            mMaxRecvPacketSize;
-	int            mRecvQueueSize;
-	int            mMaxExcptionContext;
+	int            mMaxPacketSize;
+	int            mMaxExceptionContext;
 	int            mPacketSizeOffset;
 	int            mClientTimeoutSec;
 
@@ -120,26 +114,26 @@ private:
 
 	std::string    mLogFileName;
 
-	// tcp client pool
-	CThreadLock    mTcpClientPoolLock;
-	CObjectPool*   mTcpClientPoolPtr;
+	// tcp client Cache
+	CThreadLock    mTcpClientCacheLock;
+	ObjectCache*   mTcpClientCachePtr;
 	TcpClientMap   mTcpClientMap;
 
-	// send context pool
-	CThreadLock    mSendIOContextPoolLock;
-	CObjectPool*   mSendIOContextPoolPtr;
+	// send context Cache
+	CThreadLock    mSendIOContextCacheLock;
+	ObjectCache*   mSendIOContextCachePtr;
 
-	// send packet pool
-	CThreadLock    mSendPacketPoolLock;
-	CObjectPool*   mSendPacketPoolPtr;
+	// send packet Cache
+	CThreadLock    mSendPacketCacheLock;
+	ObjectCache*   mSendPacketCachePtr;
 
-	// recv packet pool
-	CThreadLock    mRecvPacketPoolLock;
-	CObjectPool*   mRecvPacketPoolPtr;
+	// recv packet Cache
+	CThreadLock    mRecvPacketCacheLock;
+	ObjectCache*   mRecvPacketCachePtr;
 
-	// exception context pool
-	CThreadLock    mExceptionContextPoolLock;
-	CObjectPool*   mExceptionContextPoolPtr;
+	// exception context Cache
+	CThreadLock    mExceptionContextCacheLock;
+	ObjectCache*   mExceptionContextCachePtr;
 
 	bool           mStopCheckStatusThread;
 	wt::Thread*    mCheckStatusThread;

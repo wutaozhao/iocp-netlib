@@ -34,10 +34,7 @@ int NetService::StartNetService(
 	unsigned short listenPort,
 	int listenBacklog,
 	int maxConnection,
-	int maxSendPacketSize,
-	int sendQueueSize,
-	int maxRecvPacketSize,
-	int recvQueueSize,
+	int maxPacketSize,
 	int packetSizeOffset,
 	int clientTimeoutSec,
 	int logLevel,
@@ -68,8 +65,7 @@ int NetService::StartNetService(
 			break;
 		}
 		ret = service->StartNetService(ip, listenPort, listenBacklog, maxConnection,
-			maxSendPacketSize, sendQueueSize, maxRecvPacketSize, 
-			recvQueueSize, packetSizeOffset, clientTimeoutSec, logLevel, netCore, callback);
+			maxPacketSize, packetSizeOffset, clientTimeoutSec, logLevel, netCore, callback);
 		if (ret != 0) {
 			LogS(mNetCore, LOG_LEVEL_ERROR, "NetService::StartNetService start failed, ret:%d", ret);
 			break;

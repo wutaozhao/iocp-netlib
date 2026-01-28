@@ -27,10 +27,7 @@ public:
 	* @param ip                     listen ip
 	* @param listenPort             listen port
 	* @param maxConnection          max connection
-	* @param maxSendPacketSize      max send packet size
-	* @param sendQueueSize          send queue size
-	* @param maxRecvPacketSize      max recv packet size
-	* @param recvQueueSize          recv queue size
+	* @param maxPacketSize          max packet size
 	* @param packetSizeOffset       packet size of offset
 	* @param clientTimeoutSec       client time out second
 	* @param logLevel               log level
@@ -42,10 +39,7 @@ public:
 		unsigned short listenPort,
 		int listenBacklog,
 		int maxConnection,
-		int maxSendPacketSize,
-		int sendQueueSize,
-		int maxRecvPacketSize,
-		int recvQueueSize,
+		int maxPacketSize,
 		int packetSizeOffset,
 		int clientTimeoutSec,
 		int logLevel,

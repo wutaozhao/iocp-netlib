@@ -483,7 +483,7 @@ int TcpClient::SplitPacket(char* pData, int dataLen)
 			mRecvBytes = 0;
 		}
 
-		int copySize = min(leftSize, mTcpService->mMaxRecvPacketSize - mRecvBytes);
+		int copySize = min(leftSize, mTcpService->mMaxPacketSize - mRecvBytes);
 		leftSize -= copySize;
 
 		// copy first, then add
@@ -497,7 +497,7 @@ int TcpClient::SplitPacket(char* pData, int dataLen)
 		}
 
 		int packetSize = *(int*)(mRecvPacketBuffer + mTcpService->mPacketSizeOffset);
-		if (packetSize < sizeof(int) || packetSize > mTcpService->mMaxRecvPacketSize) {
+		if (packetSize < sizeof(int) || packetSize > mTcpService->mMaxPacketSize) {
 			return NSE_ILLEGAL_RECV_PACKET;
 		}
 		if (mRecvBytes < packetSize) {

@@ -68,6 +68,8 @@
 #include <string.h>
 #include <fcntl.h>
 
+typedef unsigned long long      UInt64;
+
 enum NetServiceErr {
 	NSE_SUCCESS = 0,
 	NSE_ILLEGAL_RECV_PACKET = 1,

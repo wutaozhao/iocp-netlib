@@ -77,6 +77,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="xcopy /E /Y /I /D &quot;E:\Code\github\MyLibs\output\vs2005\x86&quot; &quot;E:\Code\7FGame_Projects\7FGame_SSO\Newlib\libs\vs2005\x86&quot;&#x0D;&#x0A;xcopy /E /Y /I /D &quot;E:\Code\github\MyLibs\include&quot; &quot;E:\Code\7FGame_Projects\7FGame_SSO\Newlib\include&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -138,6 +139,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="xcopy /E /Y /I /D &quot;E:\Code\github\MyLibs\output\vs2005\x86&quot; &quot;E:\Code\7FGame_Projects\7FGame_SSO\Newlib\libs\vs2005\x86&quot;&#x0D;&#x0A;xcopy /E /Y /I /D &quot;E:\Code\github\MyLibs\include&quot; &quot;E:\Code\7FGame_Projects\7FGame_SSO\Newlib\include&quot;"
 			/>
 		</Configuration>
 	</Configurations>

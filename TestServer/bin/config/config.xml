@@ -1,0 +1,18 @@
+<CONTENT>
+<Server>
+    <ServiceName>ZWT first lib test program</ServiceName>
+    <ServiceDisp>ZWT first lib test program display name</ServiceDisp>
+    <ServiceDesc>ZWT first lib test program description</ServiceDesc>
+    <LocalIP>10.1.28.91</LocalIP>
+    <ListenPort>8500</ListenPort>
+    <WorkThreadCount>6</WorkThreadCount>
+    <LogLevel>5</LogLevel>
+    <NetLogLevel>3</NetLogLevel>
+</Server>
+<DB>
+        <DBAddr>127.0.0.1,1433</DBAddr>
+	<DBName>testdb</DBName>
+	<DBLoginName>test</DBLoginName>
+	<DBLoginPwd>test</DBLoginPwd>
+</DB>
+</CONTENT>

@@ -6,7 +6,7 @@
 class Buffer {
 public:
     Buffer(size_t init_capacity = 5120)
-        : capacity(init_capacity), size(0), data(nullptr)
+        : capacity(init_capacity), size(0), data(0)
     {
         data = new(std::nothrow) char[capacity];
         if (!data) {
@@ -30,6 +30,17 @@ public:
         return true;
     }
 
+    char* getBuffer(size_t need) {
+        if (!ensureCapacity(size + need)) {
+            std::cerr << "Failed to expand buffer during write\n";
+            return NULL;
+        }
+
+        size_t pre = size;
+        size += need;
+        return data + pre;
+    }
+
     char* getData() const {
         return data;
     }
@@ -43,7 +54,7 @@ public:
     }
 
     bool isValid() const {
-        return data != nullptr;
+        return data != 0;
     }
 
 private:
@@ -75,7 +86,8 @@ private:
         return true;
     }
 
+private:
     // forbid copy
-    Buffer(const Buffer&) = delete;
-    Buffer& operator=(const Buffer&) = delete;
+    Buffer(const Buffer&);
+    Buffer& operator=(const Buffer&);
 };

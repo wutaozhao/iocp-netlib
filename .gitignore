@@ -11,3 +11,4 @@ Win32/
 *.ilk
 *.user
 *.suo
+*.ncb

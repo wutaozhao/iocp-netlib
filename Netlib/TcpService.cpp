@@ -10,11 +10,11 @@ WT_BEGIN
 TcpService::TcpService():mServiceID(0)
 {
 	mNetCore = NULL;
-	mTcpClientPoolPtr = NULL;
-	mSendIOContextPoolPtr = NULL;
-	mSendPacketPoolPtr = NULL;
-	mRecvPacketPoolPtr = NULL;
-	mExceptionContextPoolPtr = NULL;
+	mTcpClientCachePtr = NULL;
+	mSendIOContextCachePtr = NULL;
+	mSendPacketCachePtr = NULL;
+	mRecvPacketCachePtr = NULL;
+	mExceptionContextCachePtr = NULL;
 
 	mTcpAcceptor = NULL;
 	mReleaeseAcceptorEvent = NULL;
@@ -25,21 +25,18 @@ TcpService::TcpService():mServiceID(0)
 
 	mListenPort = 0;
 	mMaxConnection = 0;
-	mMaxSendPacketSize = 0;
-	mSendQueueSize = 0;
-	mMaxRecvPacketSize = 0;
-	mRecvQueueSize = 0;
+	mMaxPacketSize = 0;
 
-	mMaxExcptionContext = 0;
+	mMaxExceptionContext = 0;
 
 	mPacketSizeOffset = 0;
 
 	mMarkedStop = false;
 
-	mStats[def("ClientPoolUsed")+
+	mStats[def("ClientCacheUsed")+
 		def("SendIOContextUsed")+
-		def("SendPoolUsed")+ 
-		def("RecvPoolUsed")+
+		def("SendCacheUsed")+ 
+		def("RecvCacheUsed")+
 	    def("ExceptionContextUsed")+
 	    def("Timeout")+
 	    def("Accept")+
@@ -57,10 +54,7 @@ int TcpService::StartNetService(
 	unsigned short listenPort,
 	int listenBacklog,
 	int maxConnection,
-	int maxSendPacketSize,
-	int sendQueueSize,
-	int maxRecvPacketSize,
-	int recvQueueSize,
+	int maxPacketSize,
 	int packetSizeOffset,
 	int clientTimeoutSec,
 	int logLevel,
@@ -85,19 +79,16 @@ int TcpService::StartNetService(
 
 		mListenPort = listenPort;
 		mMaxConnection = maxConnection;
-		mMaxSendPacketSize = maxSendPacketSize;
-		mSendQueueSize = sendQueueSize;
-		mMaxRecvPacketSize = maxRecvPacketSize;
-		mRecvQueueSize = recvQueueSize;
+		mMaxPacketSize = maxPacketSize;
 		mPacketSizeOffset = packetSizeOffset;
 		mClientTimeoutSec = clientTimeoutSec;
-		// 100 is enough
-		mMaxExcptionContext = 100;
+
+		mMaxExceptionContext = maxConnection;
 		
 		mIOCallbackPtr = callback;
 
 		// create pools
-		ret = CreateAllPool();
+		ret = CreateAllCache();
 		if (ret != 0) {
 			break;
 		}
@@ -189,7 +180,7 @@ void TcpService::StopNetService()
 
 	Log(LOG_LEVEL_INFO, "begin cancel all client");
 	{
-		LOCK_GUARD(mSendIOContextPoolLock);
+		LOCK_GUARD(mSendIOContextCacheLock);
 		TcpClientMap::iterator itor = mTcpClientMap.begin();
 		while (itor != mTcpClientMap.end() && !itor->second->IsAccepting()) {
 			itor->second->CancelIO();
@@ -200,7 +191,7 @@ void TcpService::StopNetService()
 	CTimer exitTimer;
 	exitTimer.SetTimer(600);
 	while (!exitTimer.IsTimed()) {
-		LOCK_GUARD(mSendIOContextPoolLock);
+		LOCK_GUARD(mSendIOContextCacheLock);
 		if (mTcpClientMap.size() == 0)
 		{
 			Log(LOG_LEVEL_INFO, "begin cancel all client");
@@ -211,7 +202,7 @@ void TcpService::StopNetService()
 		}
 	}
 
-	ReleaseAllPool();
+	ReleaseAllCache();
 }
 
 void TcpService::OnAcceptorReleased()
@@ -220,37 +211,37 @@ void TcpService::OnAcceptorReleased()
 	SetEvent(mReleaeseAcceptorEvent);
 }
 
-int TcpService::CreateAllPool()
+int TcpService::CreateAllCache()
 {
 	int ret = 0;
 
 	do
 	{
-		ret = CreateTcpClientPool(mMaxConnection);
+		ret = CreateTcpClientCache(mMaxConnection);
 		if (ret != 0) {
 			Log(LOG_LEVEL_ERROR, "create tcp client pool failed");
 			break;
 		}
 
-		ret = CreateSendIOContextPool(mSendQueueSize);
+		ret = CreateSendIOContextCache(mMaxConnection);
 		if (ret != 0) {
 			Log(LOG_LEVEL_ERROR, "create send io context pool failed");
 			break;
 		}
 
-		ret = CreateSendPacketPool(mSendQueueSize, mMaxSendPacketSize);
+		ret = CreateSendPacketCache(mMaxConnection, mMaxPacketSize);
 		if (ret != 0) {
 			Log(LOG_LEVEL_ERROR, "create send packet pool failed");
 			break;
 		}
 
-		ret = CreateRecvPacketPool(mRecvQueueSize, mMaxRecvPacketSize);
+		ret = CreateRecvPacketCache(mMaxConnection, mMaxPacketSize);
 		if (ret != 0) {
 			Log(LOG_LEVEL_ERROR, "create recv packet pool failed");
 			break;
 		}
 
-		ret = CreateExceptionContextPool();
+		ret = CreateExceptionContextCache();
 		if (ret != 0) {
 			Log(LOG_LEVEL_ERROR, "create exception context pool failed");
 			break;
@@ -260,31 +251,31 @@ int TcpService::CreateAllPool()
 	return ret;
 }
 
-void TcpService::ReleaseAllPool()
+void TcpService::ReleaseAllCache()
 {
 	Log(LOG_LEVEL_INFO, "begin release all pool service");
 	// release tcp client pool
 	if (true) {
-		LOCK_GUARD(mTcpClientPoolLock);
-		SafeDelete(mTcpClientPoolPtr);
+		LOCK_GUARD(mTcpClientCacheLock);
+		SafeDelete(mTcpClientCachePtr);
 	}
 	// release send io context pool
 	if (true) {
-		LOCK_GUARD(mSendIOContextPoolLock);
-		SafeDelete(mSendIOContextPoolPtr);
+		LOCK_GUARD(mSendIOContextCacheLock);
+		SafeDelete(mSendIOContextCachePtr);
 	}
 	// release send packet pool
 	if (true) {
-		LOCK_GUARD(mSendPacketPoolLock);
-		SafeDelete(mSendPacketPoolPtr);
+		LOCK_GUARD(mSendPacketCacheLock);
+		SafeDelete(mSendPacketCachePtr);
 	}
 	if (true) {
-		LOCK_GUARD(mRecvPacketPoolLock);
-		SafeDelete(mRecvPacketPoolPtr);
+		LOCK_GUARD(mRecvPacketCacheLock);
+		SafeDelete(mRecvPacketCachePtr);
 	}
 	if (true) {
-		LOCK_GUARD(mExceptionContextPoolLock);
-		SafeDelete(mExceptionContextPoolPtr);
+		LOCK_GUARD(mExceptionContextCacheLock);
+		SafeDelete(mExceptionContextCachePtr);
 	}
 	Log(LOG_LEVEL_INFO, "end release all pool service");
 }
@@ -336,10 +327,10 @@ void TcpService::Log(int level, const char* format, ...)
 	va_end(argp);
 }
 
-int TcpService::CreateTcpClientPool(int maxConnection)
+int TcpService::CreateTcpClientCache(int maxConnection)
 {
-	mTcpClientPoolPtr = new(std::nothrow) CObjectPool(sizeof(TcpClient), maxConnection);
-	if (NULL == mTcpClientPoolPtr) {
+	mTcpClientCachePtr = new(std::nothrow) ObjectCache(sizeof(TcpClient), maxConnection);
+	if (NULL == mTcpClientCachePtr) {
 		Log(LOG_LEVEL_ERROR, "create tcp client pool failed");
 		return NSE_SYSTEM_ERROR;
 	}
@@ -354,15 +345,15 @@ TcpClient* TcpService::AllocTcpClient()
 		return NULL;
 	}
 	unsigned int nextID = GetCore()->GetNextLogicSocketID();
-	LOCK_GUARD(mTcpClientPoolLock);
-	if (NULL == mTcpClientPoolPtr) {
+	LOCK_GUARD(mTcpClientCacheLock);
+	if (NULL == mTcpClientCachePtr) {
 		return NULL;
 	}
 
 	int code = 0;
 	do
 	{
-		TcpClient* pClient = mTcpClientPoolPtr->Create<TcpClient>();
+		TcpClient* pClient = mTcpClientCachePtr->Create<TcpClient>();
 		if (!pClient) {
 			code = 1;
 			break;
@@ -373,7 +364,7 @@ TcpClient* TcpService::AllocTcpClient()
 		pClient->mLogicSocketID = nextID;
 		if (!pClient->CreateSocket()) {
 			code = 2;
-			mTcpClientPoolPtr->Free(pClient);
+			mTcpClientCachePtr->Free(pClient);
 			break;
 		}
 
@@ -395,14 +386,14 @@ void TcpService::ReleaseTcpClient(TcpClient* pClient)
 	if (NULL == pClient)
 		return;
 
-	LOCK_GUARD(mTcpClientPoolLock);
+	LOCK_GUARD(mTcpClientCacheLock);
 	mTcpClientMap.erase(pClient->mLogicSocketID);
-	mTcpClientPoolPtr->Free(pClient);
+	mTcpClientCachePtr->Free(pClient);
 }*/
 
 TcpClientRef TcpService::FindClient(unsigned int socketID)
 {
-	LOCK_GUARD(mTcpClientPoolLock);
+	LOCK_GUARD(mTcpClientCacheLock);
 	TcpClientMap::iterator itor = mTcpClientMap.find(socketID);
 	if (itor == mTcpClientMap.end()) {
 		return NULL;
@@ -413,7 +404,7 @@ TcpClientRef TcpService::FindClient(unsigned int socketID)
 
 void TcpService::RemoveClient(unsigned int socketID)
 {
-	LOCK_GUARD(mTcpClientPoolLock);
+	LOCK_GUARD(mTcpClientCacheLock);
 	TcpClientMap::iterator itor = mTcpClientMap.find(socketID);
 	if (itor == mTcpClientMap.end())
 		return;
@@ -422,15 +413,15 @@ void TcpService::RemoveClient(unsigned int socketID)
 		itor->second->MarkDestroy();
 	}
 	else {
-		mTcpClientPoolPtr->Free(itor->second);
+		mTcpClientCachePtr->Free(itor->second);
 		mTcpClientMap.erase(itor);
 	}
 }
 
-int TcpService::CreateSendIOContextPool(int sendQueueSize)
+int TcpService::CreateSendIOContextCache(int sendQueueSize)
 {
-	mSendIOContextPoolPtr = new(std::nothrow) CObjectPool(sizeof(IOContext), sendQueueSize);
-	if (NULL == mSendIOContextPoolPtr) {
+	mSendIOContextCachePtr = new(std::nothrow) ObjectCache(sizeof(IOContext), sendQueueSize);
+	if (NULL == mSendIOContextCachePtr) {
 		Log(LOG_LEVEL_ERROR, "create send io context pool failed");
 		return NSE_SYSTEM_ERROR;
 	}
@@ -440,13 +431,13 @@ int TcpService::CreateSendIOContextPool(int sendQueueSize)
 
 IOContext* TcpService::AllocSendIOContext()
 {
-	LOCK_GUARD(mSendIOContextPoolLock);
-	if (NULL == mSendIOContextPoolPtr)
+	LOCK_GUARD(mSendIOContextCacheLock);
+	if (NULL == mSendIOContextCachePtr)
 	{
 		return NULL;
 	}
 
-	return mSendIOContextPoolPtr->Create<IOContext>();
+	return mSendIOContextCachePtr->Create<IOContext>();
 }
 
 void TcpService::ReleaseSendIOContext(IOContext* context)
@@ -454,14 +445,14 @@ void TcpService::ReleaseSendIOContext(IOContext* context)
 	if (NULL == context)
 		return;
 
-	LOCK_GUARD(mSendIOContextPoolLock);
-	mSendIOContextPoolPtr->Free(context);
+	LOCK_GUARD(mSendIOContextCacheLock);
+	mSendIOContextCachePtr->Free(context);
 }
 
-int TcpService::CreateSendPacketPool(int sendQueueSize, int maxSendPacketSize)
+int TcpService::CreateSendPacketCache(int sendQueueSize, int maxSendPacketSize)
 {
-	mSendPacketPoolPtr = new(std::nothrow) CObjectPool(maxSendPacketSize, sendQueueSize);
-	if (NULL == mSendPacketPoolPtr) {
+	mSendPacketCachePtr = new(std::nothrow) ObjectCache(maxSendPacketSize, sendQueueSize);
+	if (NULL == mSendPacketCachePtr) {
 		Log(LOG_LEVEL_ERROR, "create send packet pool failed");
 		return NSE_SYSTEM_ERROR;
 	}
@@ -471,17 +462,17 @@ int TcpService::CreateSendPacketPool(int sendQueueSize, int maxSendPacketSize)
 
 void* TcpService::AllocSendPacket()
 {
-	LOCK_GUARD(mSendPacketPoolLock);
-	if (NULL == mSendPacketPoolPtr)
+	LOCK_GUARD(mSendPacketCacheLock);
+	if (NULL == mSendPacketCachePtr)
 	{
 		return NULL;
 	}
 
-	void* packet = mSendPacketPoolPtr->Create();
+	void* packet = mSendPacketCachePtr->Create();
 	if (!packet) {
 		return NULL;
 	}
-	memset(packet, 0, mMaxSendPacketSize);
+	memset(packet, 0, mMaxPacketSize);
 
 	return packet;
 }
@@ -491,14 +482,14 @@ void  TcpService::ReleaseSendPacket(void* packet)
 	if (NULL == packet)
 		return;
 
-	LOCK_GUARD(mSendPacketPoolLock);
-	mSendPacketPoolPtr->Free(packet);
+	LOCK_GUARD(mSendPacketCacheLock);
+	mSendPacketCachePtr->Free(packet);
 }
 
-int TcpService::CreateRecvPacketPool(int recvQueueSize, int maxRecvPacketSize)
+int TcpService::CreateRecvPacketCache(int recvQueueSize, int maxRecvPacketSize)
 {
-	mRecvPacketPoolPtr = new(std::nothrow) CObjectPool(maxRecvPacketSize, recvQueueSize);
-	if (NULL == mRecvPacketPoolPtr) {
+	mRecvPacketCachePtr = new(std::nothrow) ObjectCache(maxRecvPacketSize, recvQueueSize);
+	if (NULL == mRecvPacketCachePtr) {
 		Log(LOG_LEVEL_ERROR, "create recv packet pool failed");
 		return NSE_SYSTEM_ERROR;
 	}
@@ -508,14 +499,17 @@ int TcpService::CreateRecvPacketPool(int recvQueueSize, int maxRecvPacketSize)
 
 void* TcpService::AllocRecvPacket()
 {
-	LOCK_GUARD(mRecvPacketPoolLock);
-	if (NULL == mRecvPacketPoolPtr)
+	LOCK_GUARD(mRecvPacketCacheLock);
+	if (NULL == mRecvPacketCachePtr)
 	{
 		return NULL;
 	}
 
-	void* packet = mRecvPacketPoolPtr->Create();
-	memset(packet, 0, mMaxRecvPacketSize);
+	void* packet = mRecvPacketCachePtr->Create();
+	if (!packet)
+		return NULL;
+
+	memset(packet, 0, mMaxPacketSize);
 
 	return packet;
 }
@@ -525,14 +519,14 @@ void  TcpService::ReleaseRecvPacket(void* packet)
 	if (NULL == packet)
 		return;
 
-	LOCK_GUARD(mRecvPacketPoolLock);
-	mRecvPacketPoolPtr->Free(packet);
+	LOCK_GUARD(mRecvPacketCacheLock);
+	mRecvPacketCachePtr->Free(packet);
 }
 
-int TcpService::CreateExceptionContextPool()
+int TcpService::CreateExceptionContextCache()
 {
-	mExceptionContextPoolPtr = new(std::nothrow) CObjectPool(sizeof(IOContext), mMaxExcptionContext);
-	if (NULL == mExceptionContextPoolPtr) {
+	mExceptionContextCachePtr = new(std::nothrow) ObjectCache(sizeof(IOContext), mMaxExceptionContext);
+	if (NULL == mExceptionContextCachePtr) {
 		Log(LOG_LEVEL_ERROR, "create exception io context failed");
 		return NSE_SYSTEM_ERROR;
 	}
@@ -542,13 +536,13 @@ int TcpService::CreateExceptionContextPool()
 
 IOContext* TcpService::AllocExceptionIOContext()
 {
-	LOCK_GUARD(mExceptionContextPoolLock);
-	if (NULL == mExceptionContextPoolPtr)
+	LOCK_GUARD(mExceptionContextCacheLock);
+	if (NULL == mExceptionContextCachePtr)
 	{
 		return NULL;
 	}
 
-	IOContext* context = mExceptionContextPoolPtr->Create<IOContext>();
+	IOContext* context = mExceptionContextCachePtr->Create<IOContext>();
 	return context;
 }
 
@@ -556,15 +550,15 @@ void  TcpService::ReleaseExceptionIOContext(IOContext* context)
 {
 	if (NULL == context)
 		return;
-	LOCK_GUARD(mExceptionContextPoolLock);
-	mExceptionContextPoolPtr->Free(context);
+	LOCK_GUARD(mExceptionContextCacheLock);
+	mExceptionContextCachePtr->Free(context);
 }
 
 int TcpService::Send(unsigned int socketID, const void* pData, int nDataLen)
 {
 	// use a memeroy block to cache the data, release the memory after send completion
 	// so here we need define the send queue size according to the memory pool
-	if (nDataLen > mMaxSendPacketSize) {
+	if (nDataLen > mMaxPacketSize) {
 		return NSE_ILLEGAL_SEND_PACKET;
 	}
 
@@ -604,7 +598,7 @@ void TcpService::checkStatus()
 #else
 		unsigned int now = GetTickCount();
 #endif
-		LOCK_GUARD(mTcpClientPoolLock);
+		LOCK_GUARD(mTcpClientCacheLock);
 		TcpClientMap::iterator itor = mTcpClientMap.begin();
 		while (itor != mTcpClientMap.end()) {
 			if (!itor->second->IsAccepting()) {
@@ -624,7 +618,7 @@ void TcpService::checkStatus()
 
 				if (itor->second->IsMarkedDestroy() && !itor->second->IsActive()) {
 					Log(LOG_LEVEL_INFO, "TcpService::checkStatus() find client marked to destroy:%u", itor->second->mLogicSocketID);
-					mTcpClientPoolPtr->Free(itor->second);
+					mTcpClientCachePtr->Free(itor->second);
 					itor = mTcpClientMap.erase(itor);
 					continue;
 				}
@@ -636,49 +630,49 @@ void TcpService::checkStatus()
 	
 	/*
 	if (!hasClientNotReleased && mMarkedStop) {
-		ReleaseAllPool();
+		ReleaseAllCache();
 		mStopCheckStatusThread = true;
 	}
 	*/
 }
 
-int  TcpService::GetClientPoolUsed()
+int  TcpService::GetClientCacheUsed()
 {
-	LOCK_GUARD(mTcpClientPoolLock);
-	return mTcpClientPoolPtr ? mTcpClientPoolPtr->GetUsedCount() : 0;
+	LOCK_GUARD(mTcpClientCacheLock);
+	return mTcpClientCachePtr ? mTcpClientCachePtr->GetUsedCount() : 0;
 }
 
-int  TcpService::GetSendIOContextPoolUsed()
+int  TcpService::GetSendIOContextCacheUsed()
 {
-	LOCK_GUARD(mSendIOContextPoolLock);
-	return mSendIOContextPoolPtr ? mSendIOContextPoolPtr->GetUsedCount() : 0;
+	LOCK_GUARD(mSendIOContextCacheLock);
+	return mSendIOContextCachePtr ? mSendIOContextCachePtr->GetUsedCount() : 0;
 }
 
-int  TcpService::GetSendPoolUsed()
+int  TcpService::GetSendCacheUsed()
 {
-	LOCK_GUARD(mSendPacketPoolLock);
-	return mSendPacketPoolPtr ? mSendPacketPoolPtr->GetUsedCount() : 0;
+	LOCK_GUARD(mSendPacketCacheLock);
+	return mSendPacketCachePtr ? mSendPacketCachePtr->GetUsedCount() : 0;
 }
 
-int  TcpService::GetRecvPoolUsed()
+int  TcpService::GetRecvCacheUsed()
 {
-	LOCK_GUARD(mRecvPacketPoolLock);
-	return mRecvPacketPoolPtr ? mRecvPacketPoolPtr->GetUsedCount() : 0;
+	LOCK_GUARD(mRecvPacketCacheLock);
+	return mRecvPacketCachePtr ? mRecvPacketCachePtr->GetUsedCount() : 0;
 }
 
-int  TcpService::GetExceptionPoolUsed()
+int  TcpService::GetExceptionCacheUsed()
 {
-	LOCK_GUARD(mExceptionContextPoolLock);
-	return mExceptionContextPoolPtr ? mExceptionContextPoolPtr->GetUsedCount() : 0;
+	LOCK_GUARD(mExceptionContextCacheLock);
+	return mExceptionContextCachePtr ? mExceptionContextCachePtr->GetUsedCount() : 0;
 }
 
 void TcpService::logStats()
 {
-	mStats["ClientPoolUsed"] = GetClientPoolUsed();
-	mStats["SendIOContextUsed"] = GetSendIOContextPoolUsed();
-	mStats["SendPoolUsed"] = GetSendPoolUsed();
-	mStats["RecvPoolUsed"] = GetRecvPoolUsed();
-	mStats["ExceptionContextUsed"] = GetExceptionPoolUsed();
+	mStats["ClientCacheUsed"] = GetClientCacheUsed();
+	mStats["SendIOContextUsed"] = GetSendIOContextCacheUsed();
+	mStats["SendCacheUsed"] = GetSendCacheUsed();
+	mStats["RecvCacheUsed"] = GetRecvCacheUsed();
+	mStats["ExceptionContextUsed"] = GetExceptionCacheUsed();
 	mStats["Connection"] = GetConnectionCount();
 
 	std::string stats;
@@ -705,6 +699,7 @@ unsigned int TcpService::ConnectServer(const char* ip, unsigned short port, int 
 	TcpClientRef c = NULL;
 	do
 	{
+		Log(LOG_LEVEL_INFO, "TcpService::ConnectServer post connect:%d", (int)port);
 		if (mListenPort != 0) {
 			Log(LOG_LEVEL_ERROR, "TcpService::ConnectServer find having listen port:%d", (int)mListenPort);
 			break;
@@ -722,9 +717,10 @@ unsigned int TcpService::ConnectServer(const char* ip, unsigned short port, int 
 		}
 		nSocketID = c->mLogicSocketID;
 
-		Log(LOG_LEVEL_DEBUG, "TcpService::ConnectServer post connect:%d", (int)port);
+		
 		if (!c->PostConnect(ip, port))
 		{
+			Log(LOG_LEVEL_ERROR, "TcpService::ConnectServer post connect failed");
 			nSocketID = 0;
 			break;
 		}
@@ -751,7 +747,7 @@ void TcpService::PostConnectSucc()
 int TcpService::GetConnectionCount()
 {
 	int count = 0;
-	LOCK_GUARD(mTcpClientPoolLock);
+	LOCK_GUARD(mTcpClientCacheLock);
 	TcpClientMap::iterator itor = mTcpClientMap.begin();
 	while (itor != mTcpClientMap.end()) {
 		if (!itor->second->IsAccepting()) {
