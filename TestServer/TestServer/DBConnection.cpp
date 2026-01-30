@@ -163,8 +163,8 @@ bool CAdoStoreProc::PutNVarchar(const wchar_t* value)
 
 bool CAdoStoreProc::PutVarbinary(char* pData, size_t len)
 {
-	CADOParameter param(CADORecordset::typeVarBinary, len);
-	_variant_t vt = MakeBinary(pData, len);
+	CADOParameter param(CADORecordset::typeVarBinary, (long)len);
+	_variant_t vt = MakeBinary(pData, (int)len);
 	if( !param.SetValue(vt) || !m_adoCmd.AddParameter(&param) ) 
 	{ 
 		char szErrorMsg[256] = { 0 };

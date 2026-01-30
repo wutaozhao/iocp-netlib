@@ -607,7 +607,7 @@ void TcpService::checkStatus()
 #if (_WIN32_WINNT >= 0x0600)
 					if ((now > itor->second->mLastTickTime) && (now - itor->second->mLastTickTime) > (mClientTimeoutSec * 1000))
 #else
-					if ((now > itor->second->mLastTickTime) && GetMsInterval(now, itor->second->mLastTickTime) > (mClientTimeoutSec * 1000))
+					if ((now > itor->second->mLastTickTime) && GetMsInterval(now, itor->second->mLastTickTime) > ((unsigned int)mClientTimeoutSec * 1000))
 #endif
 					
 					{
@@ -639,31 +639,31 @@ void TcpService::checkStatus()
 int  TcpService::GetClientCacheUsed()
 {
 	LOCK_GUARD(mTcpClientCacheLock);
-	return mTcpClientCachePtr ? mTcpClientCachePtr->GetUsedCount() : 0;
+	return mTcpClientCachePtr ? (int)mTcpClientCachePtr->GetUsedCount() : 0;
 }
 
 int  TcpService::GetSendIOContextCacheUsed()
 {
 	LOCK_GUARD(mSendIOContextCacheLock);
-	return mSendIOContextCachePtr ? mSendIOContextCachePtr->GetUsedCount() : 0;
+	return mSendIOContextCachePtr ? (int)mSendIOContextCachePtr->GetUsedCount() : 0;
 }
 
 int  TcpService::GetSendCacheUsed()
 {
 	LOCK_GUARD(mSendPacketCacheLock);
-	return mSendPacketCachePtr ? mSendPacketCachePtr->GetUsedCount() : 0;
+	return mSendPacketCachePtr ? (int)mSendPacketCachePtr->GetUsedCount() : 0;
 }
 
 int  TcpService::GetRecvCacheUsed()
 {
 	LOCK_GUARD(mRecvPacketCacheLock);
-	return mRecvPacketCachePtr ? mRecvPacketCachePtr->GetUsedCount() : 0;
+	return mRecvPacketCachePtr ? (int)mRecvPacketCachePtr->GetUsedCount() : 0;
 }
 
 int  TcpService::GetExceptionCacheUsed()
 {
 	LOCK_GUARD(mExceptionContextCacheLock);
-	return mExceptionContextCachePtr ? mExceptionContextCachePtr->GetUsedCount() : 0;
+	return mExceptionContextCachePtr ? (int)mExceptionContextCachePtr->GetUsedCount() : 0;
 }
 
 void TcpService::logStats()

@@ -2,7 +2,7 @@
 
 #include "BaseInclude.h"
 
-class Client: public IIOCallback, public Singleton<Client>
+class Client: public IIOCallback
 {
 public:
 	DECLARE_NETIOCP_INTERFACE()

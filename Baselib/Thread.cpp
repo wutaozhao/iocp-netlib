@@ -216,49 +216,45 @@ void globalDestructor(void *value)
 ThreadLocal::ThreadLocal()
 {
 #ifdef _WIN32
-	DWORD tls = TlsAlloc();
-	if( tls == TLS_OUT_OF_INDEXES )
-		mRep = 0;
-	else
-		mRep = (void*)tls;
+	mTlsIndex = TlsAlloc();
+	if (mTlsIndex == TLS_OUT_OF_INDEXES)
+		mTlsIndex = TLS_OUT_OF_INDEXES;
 #else
-	mRep = new pthread_key_t;
-	pthread_key_create((pthread_key_t*)mRep, globalDestructor);
+	mKey = new pthread_key_t;
+	pthread_key_create(mKey, globalDestructor);
 #endif
 }
 
 ThreadLocal::~ThreadLocal()
 {
-#ifndef _WIN32
-	if( mRep )
-	{
-		pthread_key_delete(*static_cast<pthread_key_t*>(mRep));
-		delete static_cast<pthread_key_t*>(mRep);
-	}
+#ifdef _WIN32
+	if (mTlsIndex != TLS_OUT_OF_INDEXES)
+		TlsFree(mTlsIndex);
+#else
+	pthread_key_delete(*mKey);
+	delete mKey;
 #endif
 }
 
 bool ThreadLocal::Store(void* ptr)
 {
 #ifdef _WIN32
-	DWORD tls = (DWORD)mRep;
-	return TlsSetValue(tls, ptr) == TRUE;
-#else
-	if( !mRep )
+	if (mTlsIndex == TLS_OUT_OF_INDEXES)
 		return false;
-	return pthread_setspecific(*static_cast<pthread_key_t*>(mRep), ptr) == 0;
+	return TlsSetValue(mTlsIndex, ptr) == TRUE;
+#else
+	return pthread_setspecific(*mKey, ptr) == 0;
 #endif
 }
 
 void* ThreadLocal::Get()
 {
 #ifdef _WIN32
-	DWORD tls = (DWORD)mRep;
-	return TlsGetValue(tls);
-#else
-	if( !mRep )
+	if (mTlsIndex == TLS_OUT_OF_INDEXES)
 		return NULL;
-	return pthread_getspecific(*static_cast<pthread_key_t*>(mRep));
+	return TlsGetValue(mTlsIndex);
+#else
+	return pthread_getspecific(*mKey);
 #endif
 }
 

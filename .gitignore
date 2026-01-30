@@ -4,6 +4,8 @@ Debug/
 Release/
 x64/
 Win32/
+log/
+netliblog/
 
 *.obj
 *.lib
@@ -12,3 +14,7 @@ Win32/
 *.user
 *.suo
 *.ncb
+*.vcproj
+*.vcxproj
+*.exe
+*.txt

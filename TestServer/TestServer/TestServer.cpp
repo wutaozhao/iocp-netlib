@@ -128,7 +128,7 @@ void TestServer::ProcessMessage()
 		mReceiveCount++;
 
 		//
-		int dataLen = readPacket.GetDataLength();
+		size_t dataLen = readPacket.GetDataLength();
 
 		PacketHeader* header = (PacketHeader*)readPacket.GetBuffer();
 
@@ -154,7 +154,7 @@ void TestServer::ProcessMessage()
 			respHead->packetSize = sizeof(BaseMsgHead) + sizeof(LoginResponse);
 			respHead->cmd = CMD_LOGIN_RESPONSE;
 
-			int ret = mNetService.Send(header->nSocketID, sendBuffer.getData(), sendBuffer.getSize());
+			int ret = mNetService.Send(header->nSocketID, sendBuffer.getData(), (int)sendBuffer.getSize());
 			if (ret != 0) {
 				LOG("error", LOG_LEVEL_ERROR, "process send data failed:%d", ret);
 			}

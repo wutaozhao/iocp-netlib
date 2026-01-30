@@ -136,6 +136,4 @@ void DBTester::Test()
 			pConnectoin->Close();
 		}
 	} while (false);
-
-	printf("size:%d\n", arr.size());
 }

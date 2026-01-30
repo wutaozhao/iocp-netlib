@@ -1,26 +1,69 @@
 # iocp-netlib
 
-A lightweight, high-performance C++ network library based on Windows IOCP  
-designed for Visual Studio 2005/2022 static library projects.
+A **simple, robust, and high-performance C++ TCP networking library for Windows**,  
+built on **IOCP (I/O Completion Port)** and designed for **real-world server and client applications**.
 
-This repository contains two static libraries:
-
-- **BaseLib** – common infrastructure and utilities
-- **NetLib** – IOCP-based TCP networking library built on top of BaseLib
-
-The project is intended for **Windows-only**, performance-sensitive server
-applications.
+`iocp-netlib` focuses on **ease of use on Windows**, explicit control, and predictable behavior,  
+without forcing users to understand IOCP internals.
 
 ---
 
-## Features
+## Overview
 
-- Windows IOCP (I/O Completion Port)
-- High-performance asynchronous TCP server
-- Static library build (`.lib`)
-- Designed for Visual Studio 2005/2022
-- Explicit object lifetime management
-- No external runtime dependencies
+This repository provides **two static libraries**:
+
+- **BaseLib**  
+  Common infrastructure: threading, timers, logging, queues, buffers, utilities.
+
+- **NetLib**  
+  A lightweight **IOCP-based TCP networking layer**, usable as:
+  - a **high-performance server**
+  - a **TCP client**
+
+The API is intentionally **minimal and intuitive**, hiding IOCP complexity behind a small set of clear interfaces.
+
+---
+
+## Key Characteristics
+
+### ✔ Windows-first Design
+
+- Native **Windows IOCP**
+- WinSock2-based
+- No cross-platform abstraction overhead
+- Optimized for Windows server workloads
+
+### ✔ Extremely Low Entry Barrier
+
+- No need to understand IOCP, OVERLAPPED, or completion ports
+- One central class: `NetService`
+- One callback interface: `IIOCallback`
+- Same API for **server and client**
+
+### ✔ Server and Client in One Library
+
+- Listen and accept connections
+- Actively connect to remote servers
+- Reuse the same callback and packet flow model
+
+### ✔ Production-Oriented
+
+- Explicit object lifetime
+- No hidden threads
+- Deterministic shutdown
+- Designed for long-running services
+
+---
+
+## Supported Platforms
+
+- **Windows only**
+- **x86 and x64**
+- Visual Studio:
+  - **VS2005**
+  - **VS2022**
+- Language level:
+  - **C++03 or later**
 
 ---
 
@@ -28,77 +71,96 @@ applications.
 
 ```text
 iocp-netlib/
-├── Baselib/        # Base utilities and infrastructure
-├── Netlib/         # IOCP network implementation
-├── TestClient/     # Test Client
-├── TestServer/     # Test Server
-├── include/        # Public headers
-├── VS2005/         # Visual Studio 2005 solution and projects
-├── VS2022/         # Visual Studio 2022 solution and projects
-├── .gitignore
+├── BaseLib/
+├── NetLib/
+├── TestServer/
+├── TestClient/
+├── include/
+├── VS2005/
+├── VS2022/
 └── README.md
 ```
+
 ---
 
-## Requirements
+## Core API
 
-- Windows 10 / Windows Server
-- Visual Studio 2005/2022
-- C++03 or later
-- WinSock2
+### IIOCallback
+
+```cpp
+class IIOCallback
+{
+public:
+    virtual void OnConnected(
+        unsigned int socket,
+        unsigned int ip,
+        unsigned short port) = 0;
+
+    virtual int OnReceived(
+        unsigned int socket,
+        unsigned int ip,
+        unsigned short port,
+        void* data,
+        int length) = 0;
+
+    virtual void OnClosed(
+        unsigned int socket,
+        unsigned int ip,
+        unsigned short port,
+        unsigned int errorCode) = 0;
+};
+```
+
+---
+
+### NetService
+
+```cpp
+class NetService
+{
+public:
+    int StartNetService(
+        const char* ip,
+        unsigned short listenPort,
+        int listenBacklog,
+        int maxConnection,
+        int maxPacketSize,
+        int packetSizeOffset,
+        int clientTimeoutSec,
+        int logLevel,
+        NetCore* netCore,
+        IIOCallback* callback);
+
+    int Send(unsigned int socketID, const void* data, int length);
+    unsigned int ConnectServer(const char* ip, unsigned short port, int waitMS);
+    int CloseSocket(unsigned int socketID);
+    void StopNetService();
+};
+```
 
 ---
 
 ## Build Instructions
 
-1. Open the solution file in the `VS2005/VS2022` directory:
+1. Open the solution in `VS2005/` or `VS2022/`
 2. Select configuration:
-- `Debug` or `Release`
-- `x86`
+   - Debug / Release
+   - x86 / x64
+3. Build the solution
 
-3. Build the solution.
-
-The output will be static libraries:
+Generated static libraries:
 
 - `BaseLib.lib`
 - `NetLib.lib`
 
 ---
 
-## Usage
+## Integration Notes
 
-1. Add `include/` to your project's include directories.
-2. Link against:
-- `BaseLib.lib`
-- `NetLib.lib`
-3. Ensure your project uses the same runtime library settings (`/MT` or `/MTd`).
-4. When you use the lib in server, you don't need main function, because the Baselib contains main function. Or 
-   you can define _WT_NO_MAIN to use your own main funciton.
-5. Run the TestServer in cmd as "TestServer.exe -d".
-6. Use "TestServer.exe -i" to install as service and "TestrServer.exe -u" to remove service.
-
-NetLib depends on BaseLib and must be linked after it.
-
----
-
-## Design Notes
-
-- The library uses explicit ownership rules for IOCP-related objects
-(`OVERLAPPED`, connection contexts, buffers).
-- No hidden background threads are created implicitly.
-- The API is designed to make object lifetime and threading behavior explicit.
-
-This library prioritizes **clarity, correctness, and performance** over
-maximum abstraction.
-
----
-
-## Limitations
-
-- Windows only
-- TCP only (currently)
-- No SSL/TLS support
-- No cross-platform abstraction layer
+- Add `include/` to your include paths
+- Link against `BaseLib.lib` and `NetLib.lib`
+- Ensure consistent runtime (`/MT` or `/MTd`)
+- Define `_WT_NO_MAIN` if you want to use your own `main()`
 
 ---
 

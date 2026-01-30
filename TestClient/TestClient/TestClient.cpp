@@ -50,9 +50,9 @@ void TestDB() {
 
 int main()
 {
-    TestNetClient();
+    //TestNetClient();
 
-    //TestDB();
+    TestDB();
 
     getchar();
 

@@ -131,7 +131,7 @@ void Client::ProcessMsg()
 		mReceiveCount++;
 
 		//
-		int dataLen = readPacket.GetDataLength();
+		size_t dataLen = readPacket.GetDataLength();
 
 		PacketHeader* header = (PacketHeader*)readPacket.GetBuffer();
 		BaseMsgHead* msgHead = (BaseMsgHead*)((char*)readPacket.GetBuffer() + sizeof(PacketHeader));
@@ -163,7 +163,7 @@ int Client::TestSend()
 	respHead->cmd = CMD_LOGIN_REQUEST;
 
 	mSendCount++;
-	int ret = SendData(sendBuffer.getData(), sendBuffer.getSize());
+	int ret = SendData(sendBuffer.getData(), (int)sendBuffer.getSize());
 	if (ret != 0) {
 		Log("error.log", LOG_LEVEL_ERROR, "process send data failed:%d", ret);
 	}
