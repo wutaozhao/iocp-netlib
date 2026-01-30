@@ -194,7 +194,7 @@ int clientTimeoutSec = 180;
 int nLogLevel = LOG_LEVEL_INFO;
 IIOCallback* callback = this;
 
-// second: here you can start many service and each service listen a port,all of them use a same core.
+// second: here you can start many services and each service listen a port,all of them can share a same core.
 int nRet = mNetService.StartNetService(ip.c_str(), listenPort, listenBacklog,
 	maxConnection, maxPacketSize,
 	packetSizeOffset, clientTimeoutSec, nLogLevel, &netCore, callback);

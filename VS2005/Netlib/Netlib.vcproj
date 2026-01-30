@@ -143,7 +143,6 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				CommandLine=""
-<<<<<<< HEAD
 			/>
 		</Configuration>
 		<Configuration
@@ -273,8 +272,6 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				CommandLine=""
-=======
->>>>>>> 0a4b4c152b46e2d5b0b1642165dd1c94abd5d6fa
 			/>
 		</Configuration>
 	</Configurations>
