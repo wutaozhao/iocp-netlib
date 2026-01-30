@@ -140,6 +140,85 @@ public:
 
 ---
 
+## Usage
+
+### Use as server
+
+```cpp
+// first: create core
+NetCore   netCore;
+if (netCore.Initialize(0) != 0) {
+	return false;
+}
+
+std::string ip = "0.0.0.0";
+unsigned short listenPort = 6805;
+int listenBacklog = 16;
+int maxConnection = 1000;
+int maxPacketSize = 10240;
+int packetSizeOffset = 0;
+int clientTimeoutSec = 180;
+int nLogLevel = LOG_LEVEL_INFO;
+IIOCallback* callback = this;
+
+// second: here you can start many service and each service listen a port,all of them use a same core.
+int nRet = mNetService.StartNetService(ip.c_str(), listenPort, listenBacklog,
+	maxConnection, maxPacketSize,
+	packetSizeOffset, clientTimeoutSec, nLogLevel, &netCore, callback);
+if (nRet != 0)
+{
+	LOG("error", LOG_LEVEL_ERROR, "Net service start failed, error: %d", nRet);
+}
+else
+{
+	printf("[listenPort:%d], server is running!\n", mPort);
+}
+```
+---
+
+### Use as client
+```cpp
+// first: create core
+NetCore   netCore;
+if (netCore.Initialize(0) != 0) {
+	return false;
+}
+
+std::string ip = "0.0.0.0";
+unsigned short listenPort = 0; // as client, dont't need port, just start service
+int listenBacklog = 16;
+int maxConnection = g_service.m_serviceConfig.m_nMaxConnectionCount;
+int maxPacketSize = g_service.m_serviceConfig.m_nMaxSendPacketSize;
+int packetSizeOffset = 0;
+int clientTimeoutSec = 180;
+int nLogLevel = LOG_LEVEL_INFO;
+IIOCallback* callback = this;
+
+// second: here you can start many service and each service listen a port,all of them use a same core.
+int nRet = mNetService.StartNetService(ip.c_str(), listenPort, listenBacklog,
+	maxConnection, maxPacketSize,
+	packetSizeOffset, clientTimeoutSec, nLogLevel, &netCore, callback);
+if (nRet != 0)
+{
+	LOG("error", LOG_LEVEL_ERROR, "Net service start failed, error: %d", nRet);
+}
+else
+{
+	printf("[listenPort:%d], server is running!\n", mPort);
+}
+
+// third: connect server
+unsigned int socketID = mNetService.ConnectServer(mRemoteIP.c_str(), mRemotePort, 1500);
+if (socketID != 0){
+    printf("connect success\n");
+}else{
+    printf("connect failed\n");
+}
+
+```
+
+---
+
 ## Build Instructions
 
 1. Open the solution in `VS2005/` or `VS2022/`
