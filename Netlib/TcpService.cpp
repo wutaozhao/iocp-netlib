@@ -166,15 +166,15 @@ void TcpService::StopNetService()
 		mTcpAcceptor->PostCancel();
 		// here we don't delete mTcpAcceptor, delete it on iocp worker thread
 #if (_WIN32_WINNT >= 0x0600)
-		Log(LOG_LEVEL_INFO, "begin wait releas acceptor, time:%llu", GetTickCount64());
+		Log(LOG_LEVEL_INFO, "begin wait release acceptor, time:%llu", GetTickCount64());
 #else
-		Log(LOG_LEVEL_INFO, "begin wait releas acceptor, time:%u", GetTickCount());
+		Log(LOG_LEVEL_INFO, "begin wait release acceptor, time:%u", GetTickCount());
 #endif
 		WaitForSingleObject(mReleaeseAcceptorEvent, 1000);
 #if (_WIN32_WINNT >= 0x0600)
-		Log(LOG_LEVEL_INFO, "finish wait releas acceptor, time:%llu", GetTickCount64());
+		Log(LOG_LEVEL_INFO, "finish wait release acceptor, time:%llu", GetTickCount64());
 #else
-		Log(LOG_LEVEL_INFO, "finish wait releas acceptor, time:%u", GetTickCount());
+		Log(LOG_LEVEL_INFO, "finish wait release acceptor, time:%u", GetTickCount());
 #endif
 		CloseHandle(mReleaeseAcceptorEvent);
 		mReleaeseAcceptorEvent = NULL;
@@ -197,7 +197,7 @@ void TcpService::StopNetService()
 		LOCK_GUARD(mSendIOContextPoolLock);
 		if (mTcpClientMap.size() == 0)
 		{
-			Log(LOG_LEVEL_INFO, "begin cancel all client");
+			Log(LOG_LEVEL_INFO, "all client canceled");
 			break;
 		}
 		else {
@@ -206,6 +206,12 @@ void TcpService::StopNetService()
 	}
 
 	ReleaseAllPool();
+
+#if (_WIN32_WINNT >= 0x0600)
+	Log(LOG_LEVEL_INFO, "stop finished, time:%llu", GetTickCount64());
+#else
+	Log(LOG_LEVEL_INFO, "stop finished, time:%u", GetTickCount());
+#endif
 }
 
 void TcpService::OnAcceptorReleased()

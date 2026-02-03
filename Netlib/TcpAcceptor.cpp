@@ -83,6 +83,9 @@ int TcpAcceptor::Initialize(const std::string& listenIP, unsigned short listenPo
 				ret = NSE_SYSTEM_ERROR;
 				break;
 			}
+			else {
+				pService->Log(LOG_LEVEL_ERROR, "post accept success", i);
+			}
 		}
 
 	} while (false);

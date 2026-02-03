@@ -126,6 +126,8 @@ void NetCoreIOCP::UnInitialize()
 	mThreads.clear();
 
 	mInitOnce = false;
+
+	Log("system.log", LOG_LEVEL_DEBUG, "UnInitialize() exit.");
 }
 
 unsigned int NetCoreIOCP::GetNextServiceID()

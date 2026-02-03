@@ -50,13 +50,16 @@ int TestHttpServer::StartHttpServer(NetCore* core)
 	}
 	*/
 
+	unsigned short port = 6870;
 	std::string path1 = "/srv/test";
 	mHttpService.SetRoute(path1, this, &TestHttpServer::OnTestHttp);
 
-	int ret = mHttpService.Start("0.0.0.0", 6870, 10240, 3, core);
+	int ret = mHttpService.Start("0.0.0.0", port, 10240, 3, core);
 	if (ret != 0) {
 		printf("start http service failed, ret:%d\n", ret);
 	}
+
+	printf("http server listening on:%d\n", (int)port);
 
 	return ret;
 }

@@ -80,7 +80,7 @@ LogManager::~LogManager()
 	UnInit();
 }
 
-bool LogManager::Init(const char* pszLogPath)
+bool LogManager::Init(const char* pszLogPath, int queueSize)
 {
 	m_strLogDir = pszLogPath;
 
@@ -106,7 +106,7 @@ bool LogManager::Init(const char* pszLogPath)
 		}
 			
 		//
-		if (m_logQueue.Init(sizeof(LogCell), 10) != 0) {
+		if (m_logQueue.Init(sizeof(LogCell), queueSize) != 0) {
 			printf("int log queue failed\n");
 			break;
 		}

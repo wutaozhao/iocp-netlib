@@ -19,7 +19,6 @@ void TestNetClient() {
         c1.TestSend();
     }
 
-    
     Client c2;
     ret = c2.StartClient(&core, 3600);
     if (ret != 0) {
@@ -37,7 +36,6 @@ void TestNetClient() {
     else {
         c3.TestSend();
     }
-    
 
     getchar();
     getchar();
@@ -50,9 +48,9 @@ void TestDB() {
 
 int main()
 {
-    //TestNetClient();
+    TestNetClient();
 
-    TestDB();
+    //TestDB();
 
     getchar();
 

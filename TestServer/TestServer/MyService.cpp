@@ -85,15 +85,23 @@ void CMyService::StopInstance()
 
 	LOG("error", LOG_LEVEL_DEBUG, "%s", "http server stop");
 
-	m_logMgr.UnInit();
-
-	/*
 	mServer1.StopServer();
+
+	LOG("error", LOG_LEVEL_DEBUG, "%s", "http server 1 stop");
 
 	mServer2.StopServer();
 
+	LOG("error", LOG_LEVEL_DEBUG, "%s", "http server 2 stop");
+
 	mServer3.StopServer();
-	*/
+
+	LOG("error", LOG_LEVEL_DEBUG, "%s", "http server 3 stop");
+
+	mNetCore.Uninitialize();
+
+	LOG("error", LOG_LEVEL_DEBUG, "%s", "net core stop");
+
+	m_logMgr.UnInit();
 }
 
 bool CMyService::Init()
@@ -128,14 +136,12 @@ bool CMyService::StartNetService()
 
 	mHttpServer1.StartHttpServer(&mNetCore);
 
-	/*
+	
 	bool ret = mServer1.StartServer(&mNetCore, 8, 3200);
 	if (!ret) {
 		printf("start server 1 failed\n");
 	}
-	*/
 	
-	/*
 	ret = mServer2.StartServer(&mNetCore, 8, 3600);
 	if (!ret) {
 		printf("start server 2 failed\n");
@@ -145,8 +151,6 @@ bool CMyService::StartNetService()
 	if (!ret) {
 		printf("start server 2 failed\n");
 	}
-	*/
-	
 
 	return true;
 }

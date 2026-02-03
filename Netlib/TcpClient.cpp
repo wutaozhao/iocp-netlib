@@ -497,7 +497,7 @@ int TcpClient::OnSendCompletion(IOContext* pContext, unsigned int nNumberOfBytes
 	}
 	mTcpService->ReleaseSendIOContext(pContext);
 
-	return 0;
+	return ret;
 }
 
 void TcpClient::OnConnectExCompletion(unsigned int errorCode)

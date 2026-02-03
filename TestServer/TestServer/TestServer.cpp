@@ -55,13 +55,13 @@ bool TestServer::StartServer(NetCore* core, int threadCount, unsigned short port
 
 		std::string ip = "0.0.0.0";
 		unsigned short listenPort = port;
-		int listenBacklog = 16;
+		int listenBacklog = 4;
 		int maxConnection = g_service.m_serviceConfig.m_nMaxConnectionCount;
 		int maxPacketSize = g_service.m_serviceConfig.m_nMaxSendPacketSize;
 		int packetSizeOffset = 0;
 		int clientTimeoutSec = 180;
 		int nLogLevel = LOG_LEVEL_INFO;
-		int protocolType = NET_PROTOCOL_HTTP;
+		int protocolType = NET_PROTOCOL_TCP;
 		IIOCallback* callback = this;
 		int nRet = mNetService.StartNetService(ip.c_str(), listenPort, listenBacklog,
 			maxConnection, maxPacketSize,

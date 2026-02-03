@@ -57,7 +57,7 @@ public:
 	~LogManager();
 
 	//
-	bool Init(const char* pszLogPath);
+	bool Init(const char* pszLogPath, int queueSize = 200);
 
 	void UnInit();
 
