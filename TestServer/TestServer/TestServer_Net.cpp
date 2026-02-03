@@ -15,6 +15,11 @@ int TestServer::OnReceived(unsigned int nSocket, unsigned int nIP, unsigned shor
 	header.nRemotePort = usPort;
 	header.nSocketID = nSocket;
 
+	char buf[4096] = { 0 };
+	memcpy(buf, pData, min(sizeof(buf), nDataLen));
+
+	LOG("error", LOG_LEVEL_DEBUG, "httpPacket:%s", buf);
+
 	PacketWrite pw;
 	if (!mPackageQueue.AllocWritePacket(pw)) {
 		printf("Alloc write packet failed\n");

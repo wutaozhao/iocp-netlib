@@ -7,7 +7,7 @@
 // This software is provided "as is", with no warranty.
 //
 #include <stdio.h>
-#include "Markup.h"
+#include "tool/Markup.h"
 
 WT_BEGIN
 

@@ -7,10 +7,13 @@
 
 namespace wt
 {
-    class ObjectCache
+    /*
+    * A dynamically growing memory pool.
+    */
+    class DynamicMemoryPool
     {
     public:
-        ObjectCache(size_t elemSize, size_t maxCache)
+        DynamicMemoryPool(size_t elemSize, size_t maxCache)
             : m_elemSize(AlignUp(elemSize))
             , m_maxCache(maxCache)
             , m_usedCount(0)
@@ -19,7 +22,7 @@ namespace wt
             assert(maxCache > 0);
         }
 
-        ~ObjectCache()
+        ~DynamicMemoryPool()
         {
             Clear();
         }
@@ -110,8 +113,8 @@ namespace wt
         }
 
     private:
-        ObjectCache(const ObjectCache&);
-        ObjectCache& operator=(const ObjectCache&);
+        DynamicMemoryPool(const DynamicMemoryPool&);
+        DynamicMemoryPool& operator=(const DynamicMemoryPool&);
 
     private:
         std::vector<void*> m_cache;

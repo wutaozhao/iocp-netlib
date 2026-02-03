@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Config.h"
-#include "NetCore.h"
+#include "net/NetCore.h"
 
 WT_BEGIN
 
@@ -13,6 +13,11 @@ public:
 	virtual int OnReceived(unsigned int nSocket, unsigned int nIP, unsigned short usPort, void* pData, int nDataLen) = 0;
 
 	virtual void OnClosed(unsigned int nSocket, unsigned int nIP, unsigned short usPort, unsigned int nErrorCode) = 0;
+};
+
+enum NetProtocolType {
+	NET_PROTOCOL_TCP = 0,
+	NET_PROTOCOL_HTTP = 1,
 };
 
 class NetService {
@@ -44,7 +49,8 @@ public:
 		int clientTimeoutSec,
 		int logLevel,
 		NetCore* netCore,
-		IIOCallback* callback
+		IIOCallback* callback,
+		int protocolType = NET_PROTOCOL_TCP
 		);
 
 	int Send(unsigned int socketID, const void* pData, int nDataLen);

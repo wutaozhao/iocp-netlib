@@ -1,5 +1,5 @@
 
-#include  "PackageQueue.h"
+#include  "tool/PackageQueue.h"
 
 WT_BEGIN
 
@@ -70,13 +70,27 @@ int PackageQueue::Init(size_t maxPacketPayload,
 	if (m_pool) {
 		return 0;
 	}
-	m_pool = new(std::nothrow) CObjectPool(sizeof(WTPacketHeader) + maxPacketPayload, maxPackets);
 
-	if (m_pool) {
-		return 0;
+	int ret = 1;
+	do
+	{
+		if (!m_sem.Create()) {
+			break;
+		}
+
+		m_pool = new(std::nothrow) FixedMemoryPool(sizeof(WTPacketHeader) + maxPacketPayload, maxPackets);
+		if (!m_pool) {
+			break;
+		}
+
+		ret = 0;
+	} while (false);
+	
+	if (ret != 0) {
+		Uninit();
 	}
 
-	return 1;
+	return ret;
 }
 
 void PackageQueue::Uninit()

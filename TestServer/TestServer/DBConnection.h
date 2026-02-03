@@ -21,9 +21,13 @@ class CDBConnection :
 	public CADODatabase
 {
 public:
+	CDBConnection();
 	CDBConnection(DBConnectionParam* pParam);
 	CDBConnection(const char* szAddr, const char* szSchema, const char* szUserName, const char* szPwd);
 	virtual ~CDBConnection(void);
+
+	void SetConnectionParam(DBConnectionParam* pParam);
+	void SetConnectionParam(const char* szAddr, const char* szSchema, const char* szUserName, const char* szPwd);
 
 	BOOL IsValid(); 
 protected:

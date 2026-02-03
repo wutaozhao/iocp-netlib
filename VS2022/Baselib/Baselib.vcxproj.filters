@@ -13,6 +13,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\sql">
+      <UniqueIdentifier>{833f6a6d-3ea9-4122-a42c-0149c2b2cdca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\net">
+      <UniqueIdentifier>{2fa7f7cf-11f9-4c5c-83d0-6f2854c46e4e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\tool">
+      <UniqueIdentifier>{685caefc-3070-4958-945b-8724d312fbb1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Baselib\AdoDatabase.cpp">
@@ -41,53 +50,65 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\AdoDatabase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\AdoTypeConvert.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\Buffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\Config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\LogManager.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\include\sql\AdoDatabase.h">
+      <Filter>Header Files\sql</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Markup.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\include\sql\AdoTypeConvert.h">
+      <Filter>Header Files\sql</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\ObjectPool.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\include\net\HttpService.h">
+      <Filter>Header Files\net</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\PackageQueue.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\include\net\NetCore.h">
+      <Filter>Header Files\net</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Semaphore.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\include\net\NetService.h">
+      <Filter>Header Files\net</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\ServiceInstance.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\include\tool\Buffer.h">
+      <Filter>Header Files\tool</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Singleton.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\include\tool\DynamicMemoryPool.h">
+      <Filter>Header Files\tool</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\SnmpStatistic.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\include\tool\FixedMemoryPool.h">
+      <Filter>Header Files\tool</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Thread.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\include\tool\FixedObjectPool.h">
+      <Filter>Header Files\tool</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\ThreadLock.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\include\tool\LogManager.h">
+      <Filter>Header Files\tool</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\util.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\include\tool\Markup.h">
+      <Filter>Header Files\tool</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\ObjectCache.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\include\tool\PackageQueue.h">
+      <Filter>Header Files\tool</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tool\Semaphore.h">
+      <Filter>Header Files\tool</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tool\ServiceInstance.h">
+      <Filter>Header Files\tool</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tool\Singleton.h">
+      <Filter>Header Files\tool</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tool\SnmpStatistic.h">
+      <Filter>Header Files\tool</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tool\Thread.h">
+      <Filter>Header Files\tool</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tool\ThreadLock.h">
+      <Filter>Header Files\tool</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tool\util.h">
+      <Filter>Header Files\tool</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

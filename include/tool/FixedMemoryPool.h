@@ -7,7 +7,10 @@
 
 namespace wt
 {
-    class CObjectPool
+    /*
+    * actually, this is a fixed memory pool.
+    */
+    class FixedMemoryPool
     {
     private:
         struct FreeNode
@@ -15,14 +18,14 @@ namespace wt
             FreeNode* next;
         };
 
-        unsigned char* m_pool;      // 原始内存
-        FreeNode* m_freeList;  // 空闲链表
-        size_t         m_elemSize;  // 对齐后的元素大小
+        unsigned char* m_pool;      
+        FreeNode* m_freeList;  
+        size_t         m_elemSize;  
         size_t         m_capacity;
         size_t         m_freeCount;
 
     private:
-        // 向上对齐到 void* 大小（C++03 可用的最大安全对齐）
+        // 
         static size_t AlignUp(size_t size)
         {
             const size_t align = sizeof(void*);
@@ -30,7 +33,7 @@ namespace wt
         }
 
     public:
-        CObjectPool(size_t elemSize, size_t capacity)
+        FixedMemoryPool(size_t elemSize, size_t capacity)
             : m_pool(0)
             , m_freeList(0)
             , m_elemSize(0)
@@ -40,14 +43,14 @@ namespace wt
             assert(elemSize > 0);
             assert(capacity > 0);
 
-            // 保证至少能存放 FreeNode
+            // 
             if (elemSize < sizeof(FreeNode))
                 elemSize = sizeof(FreeNode);
 
-            // 强制元素大小对齐
+            // 
             m_elemSize = AlignUp(elemSize);
 
-            // malloc 在 C++03 中保证返回地址满足 void* 对齐
+            // 
             m_pool = (unsigned char*)::malloc(m_elemSize * capacity);
             if (!m_pool)
             {
@@ -55,7 +58,7 @@ namespace wt
                 return;
             }
 
-            // 初始化空闲链表
+            // 
             unsigned char* p = m_pool;
             for (size_t i = 0; i < capacity - 1; ++i)
             {
@@ -70,7 +73,7 @@ namespace wt
             m_freeCount = capacity;
         }
 
-        ~CObjectPool()
+        ~FixedMemoryPool()
         {
             ::free(m_pool);
             m_pool = 0;
@@ -159,8 +162,8 @@ namespace wt
         }
 
     private:
-        CObjectPool(const CObjectPool&);
-        CObjectPool& operator=(const CObjectPool&);
+        FixedMemoryPool(const FixedMemoryPool&);
+        FixedMemoryPool& operator=(const FixedMemoryPool&);
     };
 
-} // namespace wt
+}

@@ -61,10 +61,11 @@ bool TestServer::StartServer(NetCore* core, int threadCount, unsigned short port
 		int packetSizeOffset = 0;
 		int clientTimeoutSec = 180;
 		int nLogLevel = LOG_LEVEL_INFO;
+		int protocolType = NET_PROTOCOL_HTTP;
 		IIOCallback* callback = this;
 		int nRet = mNetService.StartNetService(ip.c_str(), listenPort, listenBacklog,
 			maxConnection, maxPacketSize,
-			packetSizeOffset, clientTimeoutSec, nLogLevel, core, callback);
+			packetSizeOffset, clientTimeoutSec, nLogLevel, core, callback, protocolType);
 		if (nRet != 0)
 		{
 			LOG("error", LOG_LEVEL_ERROR, "Net service start failed, error: %d", nRet);

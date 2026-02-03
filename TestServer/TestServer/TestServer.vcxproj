@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="BaseInclude.h" />
     <ClInclude Include="DBConnection.h" />
+    <ClInclude Include="TestHttpServer.h" />
     <ClInclude Include="TestProtocol.h" />
     <ClInclude Include="TestServer.h" />
     <ClInclude Include="MyService.h" />
@@ -28,6 +29,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DBConnection.cpp" />
+    <ClCompile Include="TestHttpServer.cpp" />
     <ClCompile Include="TestServer.cpp" />
     <ClCompile Include="MyService.cpp" />
     <ClCompile Include="TestServer_Net.cpp" />

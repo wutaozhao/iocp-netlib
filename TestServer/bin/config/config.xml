@@ -10,9 +10,9 @@
     <NetLogLevel>3</NetLogLevel>
 </Server>
 <DB>
-        <DBAddr>127.0.0.1,1433</DBAddr>
-	<DBName>testdb</DBName>
-	<DBLoginName>test</DBLoginName>
-	<DBLoginPwd>test</DBLoginPwd>
+    <DBAddr>192.168.7.209,1433</DBAddr>
+	<DBName>QFPlatformDBV2025</DBName>
+	<DBLoginName>un_wtzhao</DBLoginName>
+	<DBLoginPwd>zhaosql123.com</DBLoginPwd>
 </DB>
 </CONTENT>

@@ -60,8 +60,10 @@ void TcpClient::Reset()
 	mLastErrorCode = 0;
 	mConnectExPtr = NULL;
 	mMarkedDestroy = false;
+	mCloseAfterSend = false;
 
 	mSocket.Close();
+	mConnctRemoteSem.Close();
 }
 
 void TcpClient::ShutDown()
@@ -241,16 +243,6 @@ int TcpClient::PostSend(const void* data, int dataLen)
 
 	do
 	{
-		/*
-		if (::InterlockedCompareExchange(
-			&mConnState,
-			CONN_ACTIVE,
-			CONN_ACTIVE) != CONN_ACTIVE) {
-			ret = NSE_CONNECTION_CLOSED;
-			mTcpService->Log(LOG_LEVEL_ERROR, "TcpClient::PostSend find socket invalid");
-			break;
-		}*/
-
 		//
 		context = mTcpService->AllocSendIOContext();
 		if (!context) {
@@ -268,6 +260,77 @@ int TcpClient::PostSend(const void* data, int dataLen)
 		}
 
 		memcpy(sendPacket, data, dataLen);
+
+		context->mPointer = sendPacket;
+		context->mOperationType = IOCP_OP_SEND;
+		context->mBuffer.buf = (char*)sendPacket;
+		context->mBuffer.len = dataLen;
+		context->mTcpClient = this;
+		context->mTcpService = mTcpService;
+
+		IncreaseIOCount();
+		DWORD dwFlags = 0;
+		DWORD dwSendBytes = 0;
+		int nResult = WSASend(mSocket.GetHandle(), &context->mBuffer, 1, &dwSendBytes, dwFlags, &context->mOverlapped, NULL);
+		DWORD dwLastError = WSAGetLastError();
+		if ((SOCKET_ERROR == nResult) && (ERROR_IO_PENDING != dwLastError))
+		{
+			CheckRelease();
+			mTcpService->Log(LOG_LEVEL_ERROR, "TcpClient::PostSend invoke WSASend failed, lastError:%u -- %d", dwLastError, GetLastError());
+			ret = NSE_SYSTEM_ERROR;
+			break;
+		}
+
+	} while (false);
+
+	if (ret != 0) {
+		if (context) {
+			mTcpService->ReleaseSendIOContext(context);
+		}
+		if (sendPacket) {
+			mTcpService->ReleaseSendPacket(sendPacket);
+		}
+	}
+
+	return ret;
+}
+
+int  TcpClient::PostSendHttp(HttpResponse& resp)
+{
+	int ret = 0;
+	IOContext* context = NULL;
+	void* sendPacket = NULL;
+
+	do
+	{
+		//
+		context = mTcpService->AllocSendIOContext();
+		if (!context) {
+			ret = NSE_SEND_QUEUE_FULL;
+			mTcpService->Log(LOG_LEVEL_ERROR, "TcpClient::PostSend find alloc send io context failed");
+			break;
+		}
+		context->Reset();
+
+		sendPacket = mTcpService->AllocSendPacket();
+		if (!sendPacket) {
+			ret = NSE_SEND_QUEUE_FULL;
+			mTcpService->Log(LOG_LEVEL_ERROR, "TcpClient::PostSend find alloc send packet failed");
+			break;
+		}
+
+		// 128 mean the estimate length of header
+		int dataLen = _snprintf_s((char*)sendPacket, mTcpService->mMaxPacketSize - 128, _TRUNCATE,
+			"HTTP/1.1 %d OK\r\n"
+			"Content-Length: %u\r\n"
+			"%s"
+			"\r\n"
+			"%s",
+			resp.status,
+			(unsigned int)resp.body.size(),
+			resp.headers.c_str(),
+			resp.body.c_str()
+		);
 
 		context->mPointer = sendPacket;
 		context->mOperationType = IOCP_OP_SEND;
@@ -396,9 +459,17 @@ int TcpClient::OnRecvCompletion(IOContext* pContext, unsigned int nNumberOfBytes
 			break;
 		}
 
-		ret = SplitPacket(pContext->mBuffer.buf, nNumberOfBytes);
-		if (ret != 0){
-			break;
+		if (mTcpService->GetProtocolType() == NET_PROTOCOL_TCP) {
+			ret = SplitPacket(pContext->mBuffer.buf, nNumberOfBytes);
+			if (ret != 0) {
+				break;
+			}
+		}
+		else if (mTcpService->GetProtocolType() == NET_PROTOCOL_HTTP) {
+			ret = SplitHttpPacket(pContext->mBuffer.buf, nNumberOfBytes);
+			if (ret != 0) {
+				break;
+			}
 		}
 
 		if (!PostRecv()) {
@@ -412,13 +483,18 @@ int TcpClient::OnRecvCompletion(IOContext* pContext, unsigned int nNumberOfBytes
 
 int TcpClient::OnSendCompletion(IOContext* pContext, unsigned int nNumberOfBytes)
 {
+	int ret = 0;
 	if (nNumberOfBytes != pContext->mBuffer.len) {
 		mTcpService->Log(LOG_LEVEL_ERROR, "OnSendCompletion find len not same:%u -- %u", nNumberOfBytes, pContext->mBuffer.len);
-		mTcpService->ReleaseSendIOContext(pContext);
-		return NSE_SEND_NOT_COMPLETE;
+		ret = NSE_SEND_NOT_COMPLETE;
+	}
+	else if (mCloseAfterSend) {
+		ret = NSE_BE_CLOSED;
 	}
 
-	mTcpService->ReleaseSendPacket(pContext->mPointer);
+	if (pContext->mPointer) {
+		mTcpService->ReleaseSendPacket(pContext->mPointer);
+	}
 	mTcpService->ReleaseSendIOContext(pContext);
 
 	return 0;
@@ -435,7 +511,7 @@ void TcpClient::OnConnectExCompletion(unsigned int errorCode)
 		mSocket.SetSockOpt(SOL_SOCKET, SO_DONTLINGER, (char*)&sopt, sizeof(BOOL));
 
 		if (PostRecv()) {
-			mTcpService->PostConnectSucc();
+			mConnctRemoteSem.Post();
 			mTcpService->mIOCallbackPtr->OnConnected(mLogicSocketID, mRemoteIP, mRemotePort);
 		}
 		else {
@@ -548,6 +624,11 @@ bool TcpClient::PostConnect(const char* ip, unsigned short port)
 		mRemoteIP = inet_addr(ip);
         #endif
 		mRemotePort = port;
+
+		if (!mConnctRemoteSem.Create()) {
+			mTcpService->Log(LOG_LEVEL_ERROR, "TcpClient::PostConnect create sem failed, last error:%d", GetLastError());
+			break;
+		}
 
 		int ret = mTcpService->GetCore()->AttachSocketToIOCP(mSocket.GetHandle(), (ULONG_PTR)this);
 		if (ret != 0) {

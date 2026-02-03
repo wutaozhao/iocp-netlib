@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Config.h"
-#include "Singleton.h"
-#include "Thread.h"
-#include "ThreadLock.h"
-#include "LogManager.h"
+#include "tool/Singleton.h"
+#include "tool/Thread.h"
+#include "tool/ThreadLock.h"
+#include "tool/LogManager.h"
 
 WT_BEGIN
 

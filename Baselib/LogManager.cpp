@@ -1,5 +1,5 @@
 
-#include "LogManager.h"
+#include "tool/LogManager.h"
 
 WT_BEGIN
 

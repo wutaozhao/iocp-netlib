@@ -1,7 +1,7 @@
 
 #include "TcpAcceptor.h"
 #include "TcpService.h"
-#include "NetService.h"
+#include "net/NetService.h"
 #include "TcpClient.h"
 #include "NetCoreIOCP.h"
 
@@ -117,11 +117,8 @@ void TcpAcceptor::PostCancel()
 	//
 	if (!mSocket.IsInvalid())
 	{
-#if (_WIN32_WINNT >= 0x0600)
-		CancelIoEx((HANDLE)mSocket.GetHandle(), NULL);
-#else
+		mSocket.Shutdown();
 		mSocket.Close();
-#endif
 	}
 	else {
 		pService->Log(LOG_LEVEL_ERROR, "acceptor socket invalid");
@@ -190,31 +187,33 @@ void TcpAcceptor::OnCompleteOperation(bool bSuccess, IOContext* pPID, unsigned i
 	TcpService* pService = reinterpret_cast<TcpService*>(mTcpService);
 
 	TcpClient* pClient = reinterpret_cast<TcpClient*>(pPID->mTcpClient);
+
+	bool acceptSuccess = false;
 	if (bSuccess) {
 		pService->mStats["Accept"]++;
 		if (AcceptConnection(pClient))
 		{
-			DecrementPending();
+			acceptSuccess = true;
 			pService->mStats["AcceptSucc"]++;
-			PostAccept();
-			return;
 		}
 		else {
 			pService->Log(LOG_LEVEL_ERROR, "OnCompleteOperation accept connection failed");
 		}
 	}
-	
-	// release socket and release client
-	pClient->CloseSocket();
-	pClient->Reset();
 
-	mSocket.Shutdown();
-	mSocket.Close();
+	if (!acceptSuccess) {
+		pClient->CloseSocket();
+		pClient->Reset();
+		pService->RemoveClient(pClient->mLogicSocketID);
+		pService->Log(LOG_LEVEL_ERROR, "acceptor complete get error:%u", errorCode);
+	}
 
-	pService->RemoveClient(pClient->mLogicSocketID);
-	pService->Log(LOG_LEVEL_ERROR, "acceptor complete get error:%u", errorCode);
+	PostAccept();
 
 	if (DecrementPending() == 0) {
+		pService->Log(LOG_LEVEL_ERROR, "acceptor find zero pending", errorCode);
+		mSocket.Shutdown();
+		mSocket.Close();
 		pService->OnAcceptorReleased();
 		delete this;
 	}

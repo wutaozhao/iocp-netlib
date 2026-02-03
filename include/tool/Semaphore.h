@@ -10,7 +10,6 @@ public:
 	CSemaphore()
 	{
 		m_hSem = NULL;
-		Create();
 	}
 	~CSemaphore()
 	{

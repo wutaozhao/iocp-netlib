@@ -19,9 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\NetCore.h" />
-    <ClInclude Include="..\..\include\NetService.h" />
+    <ClInclude Include="..\..\include\net\HttpService.h" />
+    <ClInclude Include="..\..\include\net\NetCore.h" />
+    <ClInclude Include="..\..\include\net\NetService.h" />
+    <ClInclude Include="..\..\Netlib\HttpServiceImplementer.h" />
     <ClInclude Include="..\..\Netlib\IOContext.h" />
+    <ClInclude Include="..\..\Netlib\BaseDefine.h" />
     <ClInclude Include="..\..\Netlib\NetCoreIOCP.h" />
     <ClInclude Include="..\..\Netlib\SocketHelper.h" />
     <ClInclude Include="..\..\Netlib\TcpAcceptor.h" />
@@ -29,13 +32,17 @@
     <ClInclude Include="..\..\Netlib\TcpService.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Netlib\HttpService.cpp" />
+    <ClCompile Include="..\..\Netlib\HttpServiceImplementer.cpp" />
     <ClCompile Include="..\..\Netlib\IOContext.cpp" />
+    <ClCompile Include="..\..\Netlib\BaseDefine.cpp" />
     <ClCompile Include="..\..\Netlib\NetCore.cpp" />
     <ClCompile Include="..\..\Netlib\NetCoreIOCP.cpp" />
     <ClCompile Include="..\..\Netlib\NetService.cpp" />
     <ClCompile Include="..\..\Netlib\SocketHelper.cpp" />
     <ClCompile Include="..\..\Netlib\TcpAcceptor.cpp" />
     <ClCompile Include="..\..\Netlib\TcpClient.cpp" />
+    <ClCompile Include="..\..\Netlib\TcpClientHttp.cpp" />
     <ClCompile Include="..\..\Netlib\TcpService.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

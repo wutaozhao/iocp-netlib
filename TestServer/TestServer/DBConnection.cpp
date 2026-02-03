@@ -2,6 +2,11 @@
 
 static volatile long nConnFailCount = 0;
 
+CDBConnection::CDBConnection()
+{
+	
+}
+
 CDBConnection::CDBConnection(DBConnectionParam* pParam)
 {
 	assert(pParam != NULL);
@@ -22,6 +27,19 @@ CDBConnection::CDBConnection(const char* szAddr, const char* szSchema, const cha
 
 CDBConnection::~CDBConnection(void)
 {
+}
+
+void CDBConnection::SetConnectionParam(DBConnectionParam* pParam)
+{
+	m_connParam = *pParam;
+}
+
+void CDBConnection::SetConnectionParam(const char* szAddr, const char* szSchema, const char* szUserName, const char* szPwd)
+{
+	m_connParam.m_strDBAddress = szAddr; //数据库服务器地址
+	m_connParam.m_strDBSchema = szSchema; //数据库名
+	m_connParam.m_strDBUserName = szUserName; //用户名
+	m_connParam.m_strDBUserPwd = szPwd; //用户密码
 }
 
 BOOL CDBConnection::IsValid()

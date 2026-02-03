@@ -36,6 +36,9 @@
     <ClInclude Include="TestProtocol.h">
       <Filter>Proto</Filter>
     </ClInclude>
+    <ClInclude Include="TestHttpServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DBConnection.cpp">
@@ -51,6 +54,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TestServer_Net.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TestHttpServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

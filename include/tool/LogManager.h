@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Config.h"
-#include "ThreadLock.h"
-#include "Thread.h"
-#include "PackageQueue.h"
-#include "util.h"
+#include "tool/ThreadLock.h"
+#include "tool/Thread.h"
+#include "tool/PackageQueue.h"
+#include "tool/util.h"
 
 WT_BEGIN
 

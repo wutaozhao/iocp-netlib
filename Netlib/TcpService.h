@@ -1,16 +1,17 @@
 #pragma once
 
 #include "Config.h"
-#include "ThreadLock.h"
-#include "NetService.h"
-#include "Thread.h"
+#include "tool/ThreadLock.h"
+#include "net/NetService.h"
+#include "tool/Thread.h"
 #include "IOContext.h"
-#include "util.h"
+#include "tool/util.h"
 #include "TcpClient.h"
-#include "ObjectCache.h"
-#include "SnmpStatistic.h"
-#include "Semaphore.h"
+#include "tool/DynamicMemoryPool.h"
+#include "tool/SnmpStatistic.h"
+#include "tool/Semaphore.h"
 #include "NetCoreIOCP.h"
+#include "net/HttpService.h"
 
 WT_BEGIN
 
@@ -32,16 +33,17 @@ public:
 		int clientTimeoutSec,
 		int logLevel,
 		NetCore* netCore,
-		IIOCallback* callback
+		IIOCallback* callback,
+		int protocolType
 	);
 
 	void StopNetService();
 
 	int Send(unsigned int socketID, const void* pData, int nDataLen);
 
-	unsigned int ConnectServer(const char* ip, unsigned short port, int waitMS);
+	int SendHttpResponse(HttpResponse& resp);
 
-	void PostConnectSucc();
+	unsigned int ConnectServer(const char* ip, unsigned short port, int waitMS);
 
 	TcpClient* AllocTcpClient();
 	//void ReleaseTcpClient(TcpClient* pClient);
@@ -72,16 +74,18 @@ public:
 
 	NetCoreIOCP* GetCore();
 
+	int GetProtocolType();
+
 protected:
 
-	int CreateAllCache();
-	void ReleaseAllCache();
+	int CreateAllPool();
+	void ReleaseAllPool();
 
-	int CreateTcpClientCache(int maxConnection);
-	int CreateSendIOContextCache(int sendQueueSize);
-	int CreateSendPacketCache(int sendQueueSize, int maxSendPacketSize);
-	int CreateRecvPacketCache(int recvQueueSize, int maxRecvPacketSize);
-	int CreateExceptionContextCache();
+	int CreateTcpClientPool(int maxConnection);
+	int CreateSendIOContextPool(int sendQueueSize);
+	int CreateSendPacketPool(int sendQueueSize, int maxSendPacketSize);
+	int CreateRecvPacketPool(int recvQueueSize, int maxRecvPacketSize);
+	int CreateExceptionContextPool();
 
 	void CheckStatusProc();
 
@@ -89,62 +93,61 @@ private:
 	void MakeLog(int srvID, unsigned short port, int logLevel);
 	void checkStatus();
 	void logStats();
-	int  GetClientCacheUsed();
-	int  GetSendIOContextCacheUsed();
-	int  GetSendCacheUsed();
-	int  GetRecvCacheUsed();
-	int  GetExceptionCacheUsed();
+	int  GetClientPoolUsed();
+	int  GetSendIOContextPoolUsed();
+	int  GetSendPoolUsed();
+	int  GetRecvPoolUsed();
+	int  GetExceptionPoolUsed();
 
 public:
 	// callback
-	IIOCallback*   mIOCallbackPtr;
-	int            mMaxConnection;
-	int            mMaxPacketSize;
-	int            mMaxExceptionContext;
-	int            mPacketSizeOffset;
-	int            mClientTimeoutSec;
+	IIOCallback*         mIOCallbackPtr;
+	int                  mMaxConnection;
+	int                  mMaxPacketSize;
+	int                  mMaxExceptionContext;
+	int                  mPacketSizeOffset;
+	int                  mClientTimeoutSec;
 
-	CSnmpStatistic mStats;
+	CSnmpStatistic       mStats;
 
 private:
-	NetCore*     mNetCore;
-	TcpAcceptor* mTcpAcceptor;
-	HANDLE       mReleaeseAcceptorEvent;
-	int          mServiceID;
+	NetCore*             mNetCore;
+	TcpAcceptor*         mTcpAcceptor;
+	HANDLE               mReleaeseAcceptorEvent;
+	int                  mServiceID;
 
-	std::string    mLogFileName;
+	std::string          mLogFileName;
 
-	// tcp client Cache
-	CThreadLock    mTcpClientCacheLock;
-	ObjectCache*   mTcpClientCachePtr;
-	TcpClientMap   mTcpClientMap;
+	// tcp client Pool
+	CThreadLock          mTcpClientPoolLock;
+	DynamicMemoryPool*   mTcpClientPoolPtr;
+	TcpClientMap         mTcpClientMap;
 
-	// send context Cache
-	CThreadLock    mSendIOContextCacheLock;
-	ObjectCache*   mSendIOContextCachePtr;
+	// send context Pool
+	CThreadLock          mSendIOContextPoolLock;
+	DynamicMemoryPool*   mSendIOContextPoolPtr;
 
-	// send packet Cache
-	CThreadLock    mSendPacketCacheLock;
-	ObjectCache*   mSendPacketCachePtr;
+	// send packet Pool
+	CThreadLock          mSendPacketPoolLock;
+	DynamicMemoryPool*   mSendPacketPoolPtr;
 
-	// recv packet Cache
-	CThreadLock    mRecvPacketCacheLock;
-	ObjectCache*   mRecvPacketCachePtr;
+	// recv packet Pool
+	CThreadLock          mRecvPacketPoolLock;
+	DynamicMemoryPool*   mRecvPacketPoolPtr;
 
-	// exception context Cache
-	CThreadLock    mExceptionContextCacheLock;
-	ObjectCache*   mExceptionContextCachePtr;
+	// exception context Pool
+	CThreadLock          mExceptionContextPoolLock;
+	DynamicMemoryPool*   mExceptionContextPoolPtr;
 
-	bool           mStopCheckStatusThread;
-	wt::Thread*    mCheckStatusThread;
-	wt::CTimer     mCheckStatusTimer;
-	wt::CTimer     mLogStatsTimer;
+	bool                 mStopCheckStatusThread;
+	wt::Thread*          mCheckStatusThread;
+	wt::CTimer           mCheckStatusTimer;
+	wt::CTimer           mLogStatsTimer;
 
-	unsigned short mListenPort;
+	unsigned short       mListenPort;
 
-	CSemaphore     mConnectSemaphore;
-
-	bool           mMarkedStop;
+	bool                 mMarkedStop;
+	int                  mProtocolType;
 };
 
 //

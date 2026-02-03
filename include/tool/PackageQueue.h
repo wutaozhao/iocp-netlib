@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Config.h"
-#include "ThreadLock.h"
-#include "ObjectPool.h"
-#include "Semaphore.h"
+#include "tool/ThreadLock.h"
+#include "tool/FixedMemoryPool.h"
+#include "tool/Semaphore.h"
 
 WT_BEGIN
 
@@ -89,7 +89,7 @@ private:
 	CSemaphore m_sem;
 	CThreadLock m_poolLock;
 
-	CObjectPool* m_pool;
+	FixedMemoryPool* m_pool;
 };
 
 WT_END

@@ -1,23 +1,10 @@
 
-#include "NetService.h"
+#include "net/NetService.h"
 #include "Config.h"
 #include "TcpService.h"
-#include "NetCoreIOCP.h"
+#include "BaseDefine.h"
 
 WT_BEGIN
-
-void LogS(NetCore* core, unsigned int logLeve, const char* format, ...) {
-	if (!core)
-		return;
-	NetCoreIOCP* iocpCore = reinterpret_cast<NetCoreIOCP*>(core->GetCore());
-	if (!iocpCore)
-		return;
-
-	va_list argp;
-	va_start(argp, format);
-	iocpCore->LogV("system.log", logLeve, format, argp);
-	va_end(argp);
-}
 
 NetService::NetService()
 {
@@ -26,7 +13,7 @@ NetService::NetService()
 
 NetService::~NetService()
 {
-
+	StopNetService();
 }
 
 int NetService::StartNetService(
@@ -39,7 +26,8 @@ int NetService::StartNetService(
 	int clientTimeoutSec,
 	int logLevel,
 	NetCore* netCore,
-	IIOCallback* callback)
+	IIOCallback* callback,
+	int protocolType)
 {
 	int ret = 0;
 
@@ -65,7 +53,7 @@ int NetService::StartNetService(
 			break;
 		}
 		ret = service->StartNetService(ip, listenPort, listenBacklog, maxConnection,
-			maxPacketSize, packetSizeOffset, clientTimeoutSec, logLevel, netCore, callback);
+			maxPacketSize, packetSizeOffset, clientTimeoutSec, logLevel, netCore, callback, protocolType);
 		if (ret != 0) {
 			LogS(mNetCore, LOG_LEVEL_ERROR, "NetService::StartNetService start failed, ret:%d", ret);
 			break;
@@ -122,6 +110,8 @@ void NetService::StopNetService()
 			return;
 		}
 		service->StopNetService();
+		delete service;
+		mService = NULL;
 	}
 }
 

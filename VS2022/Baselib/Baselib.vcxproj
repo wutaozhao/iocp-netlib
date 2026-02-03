@@ -29,22 +29,26 @@
     <ClCompile Include="..\..\Baselib\Thread.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\AdoDatabase.h" />
-    <ClInclude Include="..\..\include\AdoTypeConvert.h" />
-    <ClInclude Include="..\..\include\Buffer.h" />
     <ClInclude Include="..\..\include\Config.h" />
-    <ClInclude Include="..\..\include\LogManager.h" />
-    <ClInclude Include="..\..\include\Markup.h" />
-    <ClInclude Include="..\..\include\ObjectCache.h" />
-    <ClInclude Include="..\..\include\ObjectPool.h" />
-    <ClInclude Include="..\..\include\PackageQueue.h" />
-    <ClInclude Include="..\..\include\Semaphore.h" />
-    <ClInclude Include="..\..\include\ServiceInstance.h" />
-    <ClInclude Include="..\..\include\Singleton.h" />
-    <ClInclude Include="..\..\include\SnmpStatistic.h" />
-    <ClInclude Include="..\..\include\Thread.h" />
-    <ClInclude Include="..\..\include\ThreadLock.h" />
-    <ClInclude Include="..\..\include\util.h" />
+    <ClInclude Include="..\..\include\net\HttpService.h" />
+    <ClInclude Include="..\..\include\net\NetCore.h" />
+    <ClInclude Include="..\..\include\net\NetService.h" />
+    <ClInclude Include="..\..\include\sql\AdoDatabase.h" />
+    <ClInclude Include="..\..\include\sql\AdoTypeConvert.h" />
+    <ClInclude Include="..\..\include\tool\Buffer.h" />
+    <ClInclude Include="..\..\include\tool\DynamicMemoryPool.h" />
+    <ClInclude Include="..\..\include\tool\FixedMemoryPool.h" />
+    <ClInclude Include="..\..\include\tool\FixedObjectPool.h" />
+    <ClInclude Include="..\..\include\tool\LogManager.h" />
+    <ClInclude Include="..\..\include\tool\Markup.h" />
+    <ClInclude Include="..\..\include\tool\PackageQueue.h" />
+    <ClInclude Include="..\..\include\tool\Semaphore.h" />
+    <ClInclude Include="..\..\include\tool\ServiceInstance.h" />
+    <ClInclude Include="..\..\include\tool\Singleton.h" />
+    <ClInclude Include="..\..\include\tool\SnmpStatistic.h" />
+    <ClInclude Include="..\..\include\tool\Thread.h" />
+    <ClInclude Include="..\..\include\tool\ThreadLock.h" />
+    <ClInclude Include="..\..\include\tool\util.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

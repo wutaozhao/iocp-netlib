@@ -1,7 +1,7 @@
 
-#include "NetCore.h"
+#include "net/NetCore.h"
 #include "NetCoreIOCP.h"
-#include "util.h"
+#include "tool/util.h"
 
 WT_BEGIN
 

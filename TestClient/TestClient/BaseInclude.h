@@ -1,13 +1,13 @@
 #pragma once
 
-#include "LogManager.h"
-#include "PackageQueue.h"
-#include "Thread.h"
-#include "util.h"
-#include "Buffer.h"
-#include "NetService.h"
-#include "Singleton.h"
-#include "AdoDatabase.h"
+#include "tool/LogManager.h"
+#include "tool/PackageQueue.h"
+#include "tool/Thread.h"
+#include "tool/util.h"
+#include "tool/Buffer.h"
+#include "net/NetService.h"
+#include "tool/Singleton.h"
+#include "sql/AdoDatabase.h"
 
 #include "TestProtocol.h"
 

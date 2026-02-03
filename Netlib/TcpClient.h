@@ -3,6 +3,8 @@
 #include "Config.h"
 #include "IOContext.h"
 #include "SocketHelper.h"
+#include "tool/Semaphore.h"
+#include "net/HttpService.h"
 
 WT_BEGIN
 
@@ -44,6 +46,8 @@ public:
 
 	int  PostSend(const void* data, int dataLen);
 
+	int  PostSendHttp(HttpResponse& resp);
+
 	int PostSpecial(int opType);
 
 	// only invoked when the service exit
@@ -75,6 +79,8 @@ private:
 	void SetDisconnect(int errCode);
 
 	int SplitPacket(char* pData, int dataLen);
+
+	int SplitHttpPacket(char* pData, int dataLen);
 
 	void CheckRelease();
 
@@ -109,6 +115,8 @@ public:
 	int            mLastErrorCode;
 
 	bool           mMarkedDestroy;
+	bool           mCloseAfterSend;
+	CSemaphore     mConnctRemoteSem;
 };
 
 class TcpClientRef

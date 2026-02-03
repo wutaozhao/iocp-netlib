@@ -4,6 +4,7 @@
 #include "BaseInclude.h"
 #include "ServiceConfig.h"
 #include "TestServer.h"
+#include "TestHttpServer.h"
 
 class CMyService: public CServiceInstance
 {
@@ -43,6 +44,8 @@ private:
 	TestServer        mServer1;
 	TestServer        mServer2;
 	TestServer        mServer3;
+
+	TestHttpServer    mHttpServer1;
 
 private:
 	bool              mInitQueueSucc;

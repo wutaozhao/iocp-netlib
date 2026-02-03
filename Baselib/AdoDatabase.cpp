@@ -1,7 +1,7 @@
 
 
-#include "AdoDatabase.h"
-#include "util.h"
+#include "sql/AdoDatabase.h"
+#include "tool/util.h"
 
 WT_BEGIN
 

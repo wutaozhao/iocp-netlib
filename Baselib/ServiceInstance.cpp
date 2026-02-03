@@ -1,5 +1,5 @@
 
-#include "ServiceInstance.h"
+#include "tool/ServiceInstance.h"
 #include <WinSvc.h>
 
 WT_BEGIN
