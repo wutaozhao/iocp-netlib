@@ -7,7 +7,7 @@
 #include "tool/Buffer.h"
 #include "net/NetService.h"
 #include "tool/Singleton.h"
-#include "sql/AdoDatabase.h"
+#include "db/AdoDatabase.h"
 
 #include "TestProtocol.h"
 

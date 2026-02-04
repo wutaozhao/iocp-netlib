@@ -30,11 +30,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\Config.h" />
+    <ClInclude Include="..\..\include\db\AdoDatabase.h" />
+    <ClInclude Include="..\..\include\db\AdoTypeConvert.h" />
     <ClInclude Include="..\..\include\net\HttpService.h" />
     <ClInclude Include="..\..\include\net\NetCore.h" />
     <ClInclude Include="..\..\include\net\NetService.h" />
-    <ClInclude Include="..\..\include\sql\AdoDatabase.h" />
-    <ClInclude Include="..\..\include\sql\AdoTypeConvert.h" />
     <ClInclude Include="..\..\include\tool\Buffer.h" />
     <ClInclude Include="..\..\include\tool\DynamicMemoryPool.h" />
     <ClInclude Include="..\..\include\tool\FixedMemoryPool.h" />

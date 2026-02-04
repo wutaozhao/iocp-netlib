@@ -69,26 +69,51 @@ void TestHttpServer::Stop()
 	mHttpService.Stop();
 }
 
+CDBConnection* TestHttpServer::GetThreadConnection(unsigned int threadID)
+{
+	LOCK_GUARD(mThreadConnectionMapLock);
+	ThreadDBConnectionMap::iterator itor = mThreadConnectionMap.find(threadID);
+	if (itor != mThreadConnectionMap.end()) {
+		printf("connection exsit\n");
+		return itor->second;
+	}
+	else {
+		CDBConnection* connection = new(std::nothrow) CDBConnection(
+			g_service.m_serviceConfig.m_strDBAddr.c_str(), 
+			g_service.m_serviceConfig.m_strDBName.c_str(),
+			g_service.m_serviceConfig.m_strDBLoginName.c_str(), 
+			g_service.m_serviceConfig.m_strDBLoginPwd.c_str()
+		);
+		if (!connection) {
+			printf("Failed new connection\n");
+			return NULL;
+		}
+
+		printf("new connection\n");
+
+		mThreadConnectionMap[threadID] = connection;
+
+		return connection;
+	}
+}
+
 void TestHttpServer::OnTestHttp(HttpRequest& request)
 {
 	// 通过threadid 创建并获取连接
-	/*
-	FixedPoolObject<CDBConnection> conn(mDBPool, 1000);
-	if (!conn.Get()) {
-		printf("no connection\n");
+	CDBConnection* conn = GetThreadConnection(GetCurrentThreadId());
+	if (!conn) {
+		printf("connection is null");
 		return;
 	}
+
 	if (!conn->IsValid()) {
-		printf("db connection invalid\n");
-		return;
+		printf("connection invalid\n");
 	}
-	else {
-		printf("db valid\n");
-	*/
-	printf("current threadId:%u\n", GetCurrentThreadId());
+
+	//printf("current threadId:%u\n", GetCurrentThreadId());
 	char buffer[128] = { 0 };
 	memcpy(buffer, request.body, min(sizeof(buffer) - 1, request.bodyLen));
-	printf("body:%s\n", buffer);
+	//printf("body:%s\n", buffer);
 
 	//
 	HttpResponse response(request.socketId);

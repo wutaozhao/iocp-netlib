@@ -13,14 +13,14 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\sql">
-      <UniqueIdentifier>{833f6a6d-3ea9-4122-a42c-0149c2b2cdca}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\net">
       <UniqueIdentifier>{2fa7f7cf-11f9-4c5c-83d0-6f2854c46e4e}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\tool">
       <UniqueIdentifier>{685caefc-3070-4958-945b-8724d312fbb1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\db">
+      <UniqueIdentifier>{ca8411b9-04bc-488a-94da-6e48500d5f0c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -52,12 +52,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\Config.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\sql\AdoDatabase.h">
-      <Filter>Header Files\sql</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\sql\AdoTypeConvert.h">
-      <Filter>Header Files\sql</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\net\HttpService.h">
       <Filter>Header Files\net</Filter>
@@ -109,6 +103,12 @@
     </ClInclude>
     <ClInclude Include="..\..\include\tool\util.h">
       <Filter>Header Files\tool</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\db\AdoDatabase.h">
+      <Filter>Header Files\db</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\db\AdoTypeConvert.h">
+      <Filter>Header Files\db</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

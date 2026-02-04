@@ -183,7 +183,7 @@ void Client::CheckThreadProc()
 			if (mSocketID == 0) {
 				mSocketID = mNetService.ConnectServer(mRemoteIP.c_str(), mRemotePort, 4000);
 				if (mSocketID == 0) {
-					printf("CheckThreadProc find socket id zero\n");
+					printf("CheckThreadProc find socket id zero,thread:%u\n", GetCurrentThreadId());
 				}
 				else {
 					TestSend();

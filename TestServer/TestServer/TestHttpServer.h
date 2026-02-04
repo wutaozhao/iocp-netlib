@@ -6,6 +6,7 @@
 class TestHttpServer
 {
 public:
+	typedef std::map<unsigned int, CDBConnection*> ThreadDBConnectionMap;
 	TestHttpServer();
 	~TestHttpServer();
 
@@ -13,10 +14,15 @@ public:
 
 	void Stop();
 
+	CDBConnection* GetThreadConnection(unsigned int threadID);
+
 public:
 	void OnTestHttp(HttpRequest& request);
 
 private:
 	HttpService mHttpService;
 	FixedObjectPool<CDBConnection>* mDBPool;
+
+	CThreadLock           mThreadConnectionMapLock;
+	ThreadDBConnectionMap mThreadConnectionMap;
 };

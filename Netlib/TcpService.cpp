@@ -157,33 +157,25 @@ void TcpService::StopNetService()
 	if (mMarkedStop) {
 		return;
 	}
+	mMarkedStop = true;
 
 	Log(LOG_LEVEL_INFO, "begin stop net service");
-
-	mStopCheckStatusThread = true;
-	mMarkedStop = true;
+	// stop acceptor
 	if (mTcpAcceptor != NULL && mReleaeseAcceptorEvent != NULL) {
+		Log(LOG_LEVEL_INFO, "begin wait release acceptor");
 		mTcpAcceptor->PostCancel();
 		// here we don't delete mTcpAcceptor, delete it on iocp worker thread
-#if (_WIN32_WINNT >= 0x0600)
-		Log(LOG_LEVEL_INFO, "begin wait release acceptor, time:%llu", GetTickCount64());
-#else
-		Log(LOG_LEVEL_INFO, "begin wait release acceptor, time:%u", GetTickCount());
-#endif
 		WaitForSingleObject(mReleaeseAcceptorEvent, 1000);
-#if (_WIN32_WINNT >= 0x0600)
-		Log(LOG_LEVEL_INFO, "finish wait release acceptor, time:%llu", GetTickCount64());
-#else
-		Log(LOG_LEVEL_INFO, "finish wait release acceptor, time:%u", GetTickCount());
-#endif
 		CloseHandle(mReleaeseAcceptorEvent);
 		mReleaeseAcceptorEvent = NULL;
 		mTcpAcceptor = NULL;
+		Log(LOG_LEVEL_INFO, "end wait release acceptor");
 	}
 
 	Log(LOG_LEVEL_INFO, "begin cancel all client");
+	// cancel all client
 	{
-		LOCK_GUARD(mSendIOContextPoolLock);
+		LOCK_GUARD(mTcpClientPoolLock);
 		TcpClientMap::iterator itor = mTcpClientMap.begin();
 		while (itor != mTcpClientMap.end() && !itor->second->IsAccepting()) {
 			itor->second->CancelIO();
@@ -191,10 +183,17 @@ void TcpService::StopNetService()
 		}
 	}
 
+	// stop check thread, maybe some clients are active but unref
+	Log(LOG_LEVEL_INFO, "begin stop check thread");
+	mStopCheckStatusThread = true;
+	mCheckStatusThread->Join(200);
+	Log(LOG_LEVEL_INFO, "end stop check thread");
+
+	// wait a while for clients exit
 	CTimer exitTimer;
 	exitTimer.SetTimer(600);
 	while (!exitTimer.IsTimed()) {
-		LOCK_GUARD(mSendIOContextPoolLock);
+		LOCK_GUARD(mTcpClientPoolLock);
 		if (mTcpClientMap.size() == 0)
 		{
 			Log(LOG_LEVEL_INFO, "all client canceled");
@@ -205,6 +204,7 @@ void TcpService::StopNetService()
 		}
 	}
 
+	// release all pool
 	ReleaseAllPool();
 
 #if (_WIN32_WINNT >= 0x0600)

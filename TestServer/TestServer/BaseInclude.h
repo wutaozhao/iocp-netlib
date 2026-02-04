@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sql/AdoDatabase.h"
+#include "db/AdoDatabase.h"
 #include "tool/LogManager.h"
 #include "tool/PackageQueue.h"
 #include "tool/ServiceInstance.h"
