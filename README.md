@@ -19,6 +19,7 @@ This repository provides **two static libraries**:
   A lightweight **IOCP-based TCP networking layer**, usable as:
   - a **high-performance server**
   - a **TCP client**
+  - a **Simple Http server**
 
 The API is intentionally **minimal and intuitive**, hiding IOCP complexity behind a small set of clear interfaces.
 
@@ -140,6 +141,29 @@ public:
 
 ---
 
+### HttpService
+
+```cpp
+class HttpService
+{
+public:
+    template <class T>
+    void SetRoute(
+    const std::string& path,
+    T* obj,
+    void (T::* method)(HttpRequest&)
+    );
+
+    int Start(const char* ip, unsigned short listenPort, int maxPacketSize, int logLevel, NetCore* netCore);
+
+    int SendResponse(HttpResponse& resp);
+    
+    void Stop();
+};
+```
+
+---
+
 ## Usage
 
 ### Use as server
@@ -213,6 +237,39 @@ if (socketID != 0){
     printf("connect success\n");
 }else{
     printf("connect failed\n");
+}
+
+```
+
+---
+
+### Use as HttpServer
+```cpp
+
+int TestHttpServer::StartHttpServer(NetCore* core)
+{
+	unsigned short port = 6870;
+	std::string path1 = "/srv/test";
+	mHttpService.SetRoute(path1, this, &TestHttpServer::OnTestHttp);
+
+	int ret = mHttpService.Start("0.0.0.0", port, 10240, 3, core);
+	if (ret != 0) {
+		printf("start http service failed, ret:%d\n", ret);
+	}
+
+	printf("http server listening on:%d\n", (int)port);
+
+	return ret;
+}
+
+void TestHttpServer::OnTestHttp(HttpRequest& request)
+{
+	//
+	HttpResponse response(request.socketId);
+	response.body = "{\"Code\":0, \"Message\":\"it is ok\"}";
+
+	int sendRet = mHttpService.SendResponse(response);
+	printf("send ret:%d\n", sendRet);
 }
 
 ```
