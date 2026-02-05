@@ -22,6 +22,7 @@
     <ClInclude Include="..\..\include\net\HttpService.h" />
     <ClInclude Include="..\..\include\net\NetCore.h" />
     <ClInclude Include="..\..\include\net\NetService.h" />
+    <ClInclude Include="..\..\include\net\SuperSocket.h" />
     <ClInclude Include="..\..\Netlib\HttpServiceImplementer.h" />
     <ClInclude Include="..\..\Netlib\IOContext.h" />
     <ClInclude Include="..\..\Netlib\BaseDefine.h" />
@@ -40,6 +41,7 @@
     <ClCompile Include="..\..\Netlib\NetCoreIOCP.cpp" />
     <ClCompile Include="..\..\Netlib\NetService.cpp" />
     <ClCompile Include="..\..\Netlib\SocketHelper.cpp" />
+    <ClCompile Include="..\..\Netlib\SuperSocket.cpp" />
     <ClCompile Include="..\..\Netlib\TcpAcceptor.cpp" />
     <ClCompile Include="..\..\Netlib\TcpClient.cpp" />
     <ClCompile Include="..\..\Netlib\TcpClientHttp.cpp" />

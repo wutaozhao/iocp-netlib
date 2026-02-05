@@ -6,6 +6,7 @@
 #include "tool/util.h"
 #include "tool/Buffer.h"
 #include "net/NetService.h"
+#include "net/SuperSocket.h"
 #include "tool/Singleton.h"
 #include "db/AdoDatabase.h"
 

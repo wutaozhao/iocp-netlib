@@ -46,11 +46,24 @@ void TestDB() {
     tt.Test();
 }
 
+void TestSuperSocket() {
+    SuperSocket tcpClient;
+    if (!tcpClient.Connect("10.1.28.91", 2806, 2000)) {
+        printf("Connect failed\n");
+    }
+    else {
+        printf("Connect success\n");
+    }
+}
+
 int main()
 {
-    TestNetClient();
+    //TestNetClient();
 
     //TestDB();
+
+    //
+    TestSuperSocket();
 
     getchar();
 

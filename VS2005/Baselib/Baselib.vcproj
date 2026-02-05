@@ -322,22 +322,6 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<Filter
-				Name="net"
-				>
-				<File
-					RelativePath="..\..\include\net\HttpService.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\include\net\NetCore.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\include\net\NetService.h"
-					>
-				</File>
-			</Filter>
-			<Filter
 				Name="db"
 				>
 				<File

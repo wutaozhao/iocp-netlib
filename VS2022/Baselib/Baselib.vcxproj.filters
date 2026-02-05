@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\net">
-      <UniqueIdentifier>{2fa7f7cf-11f9-4c5c-83d0-6f2854c46e4e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\tool">
       <UniqueIdentifier>{685caefc-3070-4958-945b-8724d312fbb1}</UniqueIdentifier>
     </Filter>
@@ -52,15 +49,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\Config.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\net\HttpService.h">
-      <Filter>Header Files\net</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\net\NetCore.h">
-      <Filter>Header Files\net</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\net\NetService.h">
-      <Filter>Header Files\net</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\tool\Buffer.h">
       <Filter>Header Files\tool</Filter>

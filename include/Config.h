@@ -10,7 +10,9 @@
 #include <map>
 #include <sstream>
 #include <stdarg.h>
-
+#include <time.h>
+#include <string.h>
+#include <fcntl.h>
 
 #ifdef _WIN32
     #define WIN32_LEAN_AND_MEAN
@@ -21,13 +23,13 @@
     #include <ws2tcpip.h>
     #include <assert.h>
     #include <math.h>
-    #include <string.h>
     #include <ATLComTime.h>
     #include <icrsint.h>
     #pragma comment(lib, "ws2_32.lib")
     #pragma comment(lib, "Mswsock")
     #include <direct.h>
     #include <io.h>
+    #include <mstcpip.h> 
     
     #pragma warning(disable:4311)
     #pragma warning(disable:4312)
@@ -63,10 +65,6 @@
         #define min(a,b)            (((a) < (b)) ? (a) : (b))
     #endif
 #endif
-
-#include <time.h>
-#include <string.h>
-#include <fcntl.h>
 
 typedef unsigned long long      UInt64;
 

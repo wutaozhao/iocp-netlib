@@ -623,17 +623,14 @@ void TcpService::checkStatus()
 		while (itor != mTcpClientMap.end()) {
 			if (!itor->second->IsAccepting()) {
 				hasClientNotReleased = true;
-				if (mListenPort != 0) {
 #if (_WIN32_WINNT >= 0x0600)
-					if ((now > itor->second->mLastTickTime) && (now - itor->second->mLastTickTime) > (mClientTimeoutSec * 1000))
+				if ((now > itor->second->mLastTickTime) && (now - itor->second->mLastTickTime) > (mClientTimeoutSec * 1000))
 #else
-					if ((now > itor->second->mLastTickTime) && GetMsInterval(now, itor->second->mLastTickTime) > ((unsigned int)mClientTimeoutSec * 1000))
+				if ((now > itor->second->mLastTickTime) && GetMsInterval(now, itor->second->mLastTickTime) > ((unsigned int)mClientTimeoutSec * 1000))
 #endif
-					
-					{
-						itor->second->SetTimeout();
-						mStats["Timeout"]++;
-					}
+				{
+					itor->second->SetTimeout();
+					mStats["Timeout"]++;
 				}
 
 				if (itor->second->IsMarkedDestroy() && !itor->second->IsActive()) {

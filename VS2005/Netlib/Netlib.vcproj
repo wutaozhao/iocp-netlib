@@ -324,6 +324,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\Netlib\SuperSocket.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Netlib\TcpAcceptor.cpp"
 				>
 			</File>
@@ -363,6 +367,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\NetService.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\net\SuperSocket.h"
 				>
 			</File>
 		</Filter>
