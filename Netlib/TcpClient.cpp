@@ -295,6 +295,18 @@ int TcpClient::PostSend(const void* data, int dataLen)
 	return ret;
 }
 
+std::string GetHttpStatusDescription(int status) {
+	if (status == 200) {
+		return "OK";
+	}
+	else if (status == 404) {
+		return "Not Found";
+	}
+	else {
+		return "Unknown Error";
+	}
+}
+
 int  TcpClient::PostSendHttp(HttpResponse& resp)
 {
 	int ret = 0;
@@ -321,12 +333,13 @@ int  TcpClient::PostSendHttp(HttpResponse& resp)
 
 		// 128 mean the estimate length of header
 		int dataLen = _snprintf_s((char*)sendPacket, mTcpService->mMaxPacketSize - 128, _TRUNCATE,
-			"HTTP/1.1 %d OK\r\n"
+			"HTTP/1.1 %d %s\r\n"
 			"Content-Length: %u\r\n"
 			"%s"
 			"\r\n"
 			"%s",
 			resp.status,
+			GetHttpStatusDescription(resp.status).c_str(),
 			(unsigned int)resp.body.size(),
 			resp.headers.c_str(),
 			resp.body.c_str()

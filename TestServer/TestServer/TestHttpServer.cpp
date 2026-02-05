@@ -52,7 +52,7 @@ int TestHttpServer::StartHttpServer(NetCore* core)
 
 	unsigned short port = 6870;
 	std::string path1 = "/srv/test";
-	mHttpService.SetRoute(path1, this, &TestHttpServer::OnTestHttp);
+	mHttpService.SetRoute("POST", path1, this, &TestHttpServer::OnTestHttp);
 
 	int ret = mHttpService.Start("0.0.0.0", port, 10240, 3, core);
 	if (ret != 0) {
@@ -99,7 +99,6 @@ CDBConnection* TestHttpServer::GetThreadConnection(unsigned int threadID)
 
 void TestHttpServer::OnTestHttp(HttpRequest& request)
 {
-	// 通过threadid 创建并获取连接
 	CDBConnection* conn = GetThreadConnection(GetCurrentThreadId());
 	if (!conn) {
 		printf("connection is null");

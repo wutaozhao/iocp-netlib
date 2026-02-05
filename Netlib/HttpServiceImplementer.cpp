@@ -15,9 +15,9 @@ HttpServiceImplementer::~HttpServiceImplementer()
 	Stop();
 }
 
-void HttpServiceImplementer::SetRoute(const std::string& path, IHttpRouteHandler* handler)
+void HttpServiceImplementer::SetRoute(const std::string& method, const std::string& path, IHttpRouteHandler* handler)
 {
-	mRoutes[path] = handler;
+	mRoutes[method + "_" + path] = handler;
 }
 
 
@@ -146,37 +146,104 @@ void HttpServiceImplementer::ProcessMsg()
 
 void HttpServiceImplementer::OnHttpPacket(HttpProtocolHeader* protocolHeader, const char* data, size_t len)
 {
-	HttpRequest req;
+	if (!protocolHeader || !data || len < 14) // "GET / HTTP/1.1"
+		return;
+
+	HttpRequest req{};
 	req.socketId = protocolHeader->socketID;
 	req.remoteIP = protocolHeader->remoteIP;
 	req.remotePort = protocolHeader->remotePort;
-	
+
 	const char* p = data;
-	const char* sp1 = strchr(p, ' ');
-	const char* sp2 = strchr(sp1 + 1, ' ');
+	const char* end = data + len;
+
+	const char* sp1 = static_cast<const char*>(memchr(p, ' ', end - p));
+	if (!sp1 || sp1 == p)
+		return;
+
+	const char* sp2 = static_cast<const char*>(memchr(sp1 + 1, ' ', end - (sp1 + 1)));
+	if (!sp2 || sp2 <= sp1 + 1)
+		return;
+
+	size_t methodLen = sp1 - p;
+	size_t pathLen = sp2 - (sp1 + 1);
+
+	if (methodLen > 16 || pathLen > 256)
+		return;
 
 	req.method = p;
-	req.methodLen = sp1 - p;
+	req.methodLen = methodLen;
+
+	std::string method(req.method, req.methodLen);
 
 	req.path = sp1 + 1;
-	req.pathLen = sp2 - (sp1 + 1);
+	req.pathLen = pathLen;
 
 	size_t headerSize = 0;
-	ParseHttpHeaders(data, len, req.headers, headerSize);
+	if (!ParseHttpHeaders(data, len, req.headers, headerSize))
+		return;
 
+	if (headerSize == 0 || headerSize >= len)
+		return;
+
+	size_t bodyLen = 0;
 	const HttpHeader* cl = req.headers.Find("Content-Length");
+	if (cl)
+	{
+		bodyLen = atoi(cl->value);
+	}
+
+	if (headerSize + bodyLen > len)
+		return;
+
 	req.body = data + headerSize;
-	req.bodyLen = cl ? atoi(cl->value) : 0;
+	req.bodyLen = bodyLen;
+
+	req.keepAlive = false;
 
 	const HttpHeader* conn = req.headers.Find("Connection");
-	req.keepAlive = (conn && _strnicmp(conn->value, "keep-alive", 10) == 0);
+	if (conn)
+	{
+		if (_strnicmp(conn->value, "keep-alive", 10) == 0)
+			req.keepAlive = true;
+	}
+	else
+	{
+		if (memcmp(sp2 + 1, "HTTP/1.1", 8) == 0)
+			req.keepAlive = true;
+	}
 
-	std::string path(req.path, req.pathLen);
-	RouteMap::iterator it = mRoutes.find(path);
+	const char* q = static_cast<const char*>(
+		memchr(req.path, '?', req.pathLen));
+
+	size_t purePathLen = q ? (size_t)(q - req.path) : req.pathLen;
+	std::string path(req.path, purePathLen);
+
+	RouteMap::iterator it = mRoutes.find(method + "_" + path);
 	if (it != mRoutes.end())
 	{
 		it->second->Handle(req);
 	}
+	else
+	{
+		SendNotFoundResponse(req.socketId);
+	}
+}
+
+void HttpServiceImplementer::SendNotFoundResponse(unsigned int nSocket)
+{
+	static const char body[] =
+		"<html>"
+		"<head><title>404 Not Found</title></head>"
+		"<body><h1>404 Not Found</h1></body>"
+		"</html>";
+
+	HttpResponse response(nSocket);
+	response.AddHeader("Content-Type: text/html; charset=utf-8");
+	response.SetStatus(404);
+	response.body = body;
+
+	SendHttpResponse(response);
 }
 
 bool HttpServiceImplementer::ParseHttpHeaders(const char* data,

@@ -87,22 +87,22 @@ template <class T>
 class RouteHandlerImpl : public IHttpRouteHandler
 {
 public:
-    typedef void (T::* Method)(HttpRequest&);
+    typedef void (T::* HttpCallback)(HttpRequest&);
 
-    RouteHandlerImpl(T* obj, Method method)
+    RouteHandlerImpl(T* obj, HttpCallback cb)
         : mObj(obj)
-        , mMethod(method)
+        , mCallback(cb)
     {
     }
 
     virtual void Handle(HttpRequest& req)
     {
-        (mObj->*mMethod)(req);
+        (mObj->*mCallback)(req);
     }
 
 private:
     T* mObj;
-    Method mMethod;
+    HttpCallback mCallback;
 };
 
 class IHttpServiceImpl
@@ -111,6 +111,7 @@ public:
     virtual ~IHttpServiceImpl() {}
 
     virtual void SetRoute(
+        const std::string& method,
         const std::string& path,
         IHttpRouteHandler* handler
     ) = 0;
@@ -137,15 +138,16 @@ public:
 
     template <class T>
     void SetRoute(
+        const std::string& method,
         const std::string& path,
         T* obj,
-        void (T::* method)(HttpRequest&)
+        void (T::* callback)(HttpRequest&)
     )
     {
         IHttpRouteHandler* handler =
-            CreateRouteHandler(obj, method);
+            CreateRouteHandler(obj, callback);
 
-        mImpl->SetRoute(path, handler);
+        mImpl->SetRoute(method, path, handler);
     }
 
     int Start(const char* ip,
@@ -166,17 +168,17 @@ private:
     template <class T>
     static IHttpRouteHandler* CreateRouteHandler(
         T* obj,
-        void (T::* method)(HttpRequest&)
+        void (T::* callback)(HttpRequest&)
     );
 };
 
 template <class T>
 IHttpRouteHandler* HttpService::CreateRouteHandler(
     T* obj,
-    void (T::* method)(HttpRequest&)
+    void (T::* callback)(HttpRequest&)
 )
 {
-    return new RouteHandlerImpl<T>(obj, method);
+    return new RouteHandlerImpl<T>(obj, callback);
 }
 
 

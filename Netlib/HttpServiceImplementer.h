@@ -14,7 +14,7 @@ public:
 	HttpServiceImplementer();
 	~HttpServiceImplementer();
 
-	void SetRoute(const std::string& path, IHttpRouteHandler* handler);
+	void SetRoute(const std::string& method, const std::string& path, IHttpRouteHandler* handler);
 
 	int Start(
 		const char* ip,
@@ -40,6 +40,8 @@ protected:
 	void OnHttpPacket(HttpProtocolHeader* protocolHeader, const char* data, size_t len);
 
 	bool ParseHttpHeaders(const char* data, size_t len, HttpHeaders& hs, size_t& headerSize);
+
+	void SendNotFoundResponse(unsigned int nSocket);
 
 private:
 	typedef std::map<std::string, IHttpRouteHandler*> RouteMap;
