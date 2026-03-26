@@ -108,6 +108,18 @@ inline std::string GetCurrentTimeStr()
 	return timebuf;
 }
 
+inline unsigned long long GetCPUTickTime() {
+#ifdef _WIN32
+#if (_WIN32_WINNT >= 0x0600)
+	return GetTickCount64();
+#else
+	return GetTickCount();
+#endif
+#else
+	return GetCurrMsTime();
+#endif
+}
+
 #ifdef _WIN32
 inline DWORD GetMsInterval(DWORD dwNow, DWORD dwLast) 
 {

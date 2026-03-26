@@ -236,6 +236,14 @@ bool LogManager::WriteV(const char* pszLogName, unsigned int nLogLevel, const ch
 	LogCell logCell;
 	memset(&logCell, 0, sizeof(logCell));
 
+#ifdef _WIN32
+	logCell.threadID = GetCurrentThreadId(),
+#else
+	logCell.threadID = zwtgettid(),      // thread id
+#endif
+	logCell.tickTime = GetCPUTickTime();
+	
+
 	logCell.logLevel = nLogLevel;
 	memcpy(logCell.name, pszLogName, min(sizeof(logCell.name) - 1, strlen(pszLogName)));
 	vsprintf_s(logCell.content, sizeof(logCell.content) - 1, pszFormat, args);
@@ -316,20 +324,16 @@ void LogManager::_write(LogCell* cell)
 			// [DateTime] [ProcessID] [ThreadID][LEVELINFO]: CONTENT
 			_snprintf_s(szBuffer,
 				sizeof(szBuffer) - 1, _TRUNCATE,
-				"[%04d-%02d-%02d %02d:%02d:%02d][%d][%d][%d:%s] %s\r\n",
+				"[%04d-%02d-%02d %02d:%02d:%02d][%d][%llu_%llu][%d:%s] %s\r\n",
 				tNow.tm_year + 1900,
 				tNow.tm_mon + 1,
 				tNow.tm_mday,
 				tNow.tm_hour,
 				tNow.tm_min,
 				tNow.tm_sec,
-#ifdef _WIN32
-				GetCurrentProcessId(),
-				GetCurrentThreadId(),
-#else
-				getpid(),        // process id
-				zwtgettid(),      // thread id
-#endif
+				cell->threadID,
+				cell->tickTime,
+				GetCPUTickTime(),
 				cell->logLevel,       // log level
 				GetLevelName(cell->logLevel).c_str(),
 				cell->content);

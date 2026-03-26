@@ -177,8 +177,11 @@ void TcpService::StopNetService()
 	{
 		LOCK_GUARD(mTcpClientPoolLock);
 		TcpClientMap::iterator itor = mTcpClientMap.begin();
-		while (itor != mTcpClientMap.end() && !itor->second->IsAccepting()) {
-			itor->second->CancelIO();
+		while (itor != mTcpClientMap.end()) {
+			if (!itor->second->IsAccepting())
+			{
+				itor->second->CancelIO();
+			}
 			++itor;
 		}
 	}

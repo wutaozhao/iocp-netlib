@@ -101,11 +101,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>..\..\output\vs2022\x86\</OutDir>
+    <OutDir>E:\Code\7FGame_Projects\7FGame_PlatformSrv\7FGSystemNew\QFPlatServersV2\SDK\Newlib\libs\VS2022\x86\</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>..\..\output\vs2022\x86\</OutDir>
+    <OutDir>E:\Code\7FGame_Projects\7FGame_PlatformSrv\7FGSystemNew\QFPlatServersV2\SDK\Newlib\libs\VS2022\x86\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>..\..\output\vs2022\x64\</OutDir>

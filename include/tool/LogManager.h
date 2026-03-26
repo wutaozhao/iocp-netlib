@@ -42,9 +42,11 @@ struct LogFileObject
 
 #pragma pack(1)
 struct LogCell {
-	char            name[32];
-	unsigned int    logLevel;
-	char            content[10240];
+	unsigned int        threadID;
+	unsigned long long  tickTime;
+	char                name[32];
+	unsigned int        logLevel;
+	char                content[10240];
 };
 #pragma pack()
 

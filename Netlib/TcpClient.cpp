@@ -381,6 +381,8 @@ int  TcpClient::PostSendHttp(HttpResponse& resp)
 
 void TcpClient::OnCompleteOperation(bool bSuccess, IOContext* pContext, unsigned int numberOfBytes, unsigned int errorCode)
 {
+	mTcpService->Log(LOG_LEVEL_DEBUG, "TcpClient OnCompleteOperation opType:%d, bytes:%d, err:%u", pContext->mOperationType, numberOfBytes, errorCode);
+
 	UpdateLastTickTime();
 
 	try {
@@ -504,6 +506,9 @@ int TcpClient::OnSendCompletion(IOContext* pContext, unsigned int nNumberOfBytes
 	else if (mCloseAfterSend) {
 		ret = NSE_BE_CLOSED;
 	}
+	else {
+		mTcpService->Log(LOG_LEVEL_DEBUG, "OnSendCompletion datalen:%d", nNumberOfBytes);
+	}
 
 	if (pContext->mPointer) {
 		mTcpService->ReleaseSendPacket(pContext->mPointer);
@@ -557,9 +562,11 @@ void TcpClient::SetDisconnect(int errCode)
 
 int TcpClient::SplitPacket(char* pData, int dataLen)
 {
+
 	int    leftSize = dataLen;
 	char*  pTemp = pData;
 
+	mTcpService->Log(LOG_LEVEL_DEBUG, "TcpClient SplitPacket begin split packet,len:%d", dataLen);
 	while (leftSize > 0) {
 		if (mRecvPacketBuffer == NULL) {
 			mRecvPacketBuffer = (char*)mTcpService->AllocRecvPacket();
@@ -593,6 +600,7 @@ int TcpClient::SplitPacket(char* pData, int dataLen)
 			return 0;
 		}
 
+		mTcpService->Log(LOG_LEVEL_DEBUG, "TcpClient SplitPacket find one packet,len:%d", dataLen);
 		int ret = mTcpService->mIOCallbackPtr->OnReceived(mLogicSocketID, mRemoteIP, mRemotePort, mRecvPacketBuffer, packetSize);
 		if (ret != 0) {
 			mTcpService->Log(LOG_LEVEL_ERROR, "split packet on recv get ret:%d, closed", ret);
