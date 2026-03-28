@@ -381,7 +381,8 @@ int  TcpClient::PostSendHttp(HttpResponse& resp)
 
 void TcpClient::OnCompleteOperation(bool bSuccess, IOContext* pContext, unsigned int numberOfBytes, unsigned int errorCode)
 {
-	mTcpService->Log(LOG_LEVEL_DEBUG, "TcpClient OnCompleteOperation opType:%d, bytes:%d, err:%u", pContext->mOperationType, numberOfBytes, errorCode);
+	//mTcpService->Log(LOG_LEVEL_DEBUG, "TcpClient OnCompleteOperation opType:%d, bytes:%d, err:%u, port:%d, ip:%s, socket:%u", 
+	//	pContext->mOperationType, numberOfBytes, errorCode, (int)mRemotePort, ToStringIP(mRemoteIP).c_str(), mLogicSocketID);
 
 	UpdateLastTickTime();
 
@@ -560,9 +561,11 @@ void TcpClient::SetDisconnect(int errCode)
 	}
 }
 
+//two cases
+//first: datalen > maxPacketSize
+//second: datalen <= maxPacketSizes
 int TcpClient::SplitPacket(char* pData, int dataLen)
 {
-
 	int    leftSize = dataLen;
 	char*  pTemp = pData;
 
@@ -580,6 +583,10 @@ int TcpClient::SplitPacket(char* pData, int dataLen)
 		}
 
 		int copySize = min(leftSize, mTcpService->mMaxPacketSize - mRecvBytes);
+		if (copySize <= 0) {
+			return NSE_ILLEGAL_RECV_PACKET;
+		}
+
 		leftSize -= copySize;
 
 		// copy first, then add
@@ -587,29 +594,35 @@ int TcpClient::SplitPacket(char* pData, int dataLen)
 		mRecvBytes += copySize;
 		pTemp += copySize;
 
-		if (mRecvBytes < (mTcpService->mPacketSizeOffset + (int)sizeof(int)))
+		while (true)
 		{
-			return 0;
-		}
+			if (mRecvBytes < (mTcpService->mPacketSizeOffset + (int)sizeof(int)))
+			{
+				break;
+			}
 
-		int packetSize = *(int*)(mRecvPacketBuffer + mTcpService->mPacketSizeOffset);
-		if (packetSize < sizeof(int) || packetSize > mTcpService->mMaxPacketSize) {
-			return NSE_ILLEGAL_RECV_PACKET;
-		}
-		if (mRecvBytes < packetSize) {
-			return 0;
-		}
+			int packetSize = 0;
+			memcpy(&packetSize, mRecvPacketBuffer + mTcpService->mPacketSizeOffset, sizeof(int));
+			if (packetSize < sizeof(int) || packetSize > mTcpService->mMaxPacketSize) {
+				return NSE_ILLEGAL_RECV_PACKET;
+			}
+			if (mRecvBytes < packetSize) {
+				break;
+			}
 
-		mTcpService->Log(LOG_LEVEL_DEBUG, "TcpClient SplitPacket find one packet,len:%d", dataLen);
-		int ret = mTcpService->mIOCallbackPtr->OnReceived(mLogicSocketID, mRemoteIP, mRemotePort, mRecvPacketBuffer, packetSize);
-		if (ret != 0) {
-			mTcpService->Log(LOG_LEVEL_ERROR, "split packet on recv get ret:%d, closed", ret);
-			SetDisconnect(NSE_BE_CLOSED);
-			return NSE_BE_CLOSED;
-		}
-		mRecvBytes -= packetSize;
+			//mTcpService->Log(LOG_LEVEL_DEBUG, "TcpClient SplitPacket find one packet,len:%d, socket:%u, ip:%s, port:%d",
+			//	dataLen, mLogicSocketID, ToStringIP(mRemoteIP).c_str(), (int)mRemotePort);
+			int ret = mTcpService->mIOCallbackPtr->OnReceived(mLogicSocketID, mRemoteIP, mRemotePort, mRecvPacketBuffer, packetSize);
+			if (ret != 0) {
+				mTcpService->Log(LOG_LEVEL_ERROR, "split packet on recv get ret:%d, closed", ret);
+				return NSE_BE_CLOSED;
+			}
+			mRecvBytes -= packetSize;
 
-		memmove(mRecvPacketBuffer, mRecvPacketBuffer + packetSize, mRecvBytes);
+			if (mRecvBytes > 0) {
+				memmove(mRecvPacketBuffer, mRecvPacketBuffer + packetSize, mRecvBytes);
+			}
+		}
 	}
 
 	return 0;

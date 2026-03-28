@@ -83,7 +83,7 @@ bool ParseHttpHeaders(const char* data,
 
 int TcpClient::SplitHttpPacket(char* pData, int dataLen)
 {
-	int    leftSize = dataLen;
+	int   leftSize = dataLen;
 	char* pTemp = pData;
 
 	while (leftSize > 0)
@@ -99,8 +99,11 @@ int TcpClient::SplitHttpPacket(char* pData, int dataLen)
 			mRecvBytes = 0;
 		}
 
-		int copySize = min(leftSize,
-			mTcpService->mMaxPacketSize - mRecvBytes);
+		int copySize = min(leftSize, mTcpService->mMaxPacketSize - mRecvBytes);
+		if (copySize <= 0)
+		{
+			return NSE_ILLEGAL_RECV_PACKET;
+		}
 
 		memcpy(mRecvPacketBuffer + mRecvBytes, pTemp, copySize);
 
@@ -108,60 +111,61 @@ int TcpClient::SplitHttpPacket(char* pData, int dataLen)
 		leftSize -= copySize;
 		pTemp += copySize;
 
-		HttpHeaders hs;
-		size_t headerSize = 0;
-
-		if (!ParseHttpHeaders(mRecvPacketBuffer,
-			mRecvBytes,
-			hs,
-			headerSize))
+		while (true)
 		{
-			return 0;
-		}
+			HttpHeaders hs;
+			size_t headerSize = 0;
 
-		int contentLength = GetContentLength(hs);
-		if (contentLength < 0)
-		{
-			mTcpService->Log(LOG_LEVEL_ERROR, "illegal http Content-Length");
-			return NSE_ILLEGAL_RECV_PACKET;
-		}
+			if (!ParseHttpHeaders(mRecvPacketBuffer, mRecvBytes, hs, headerSize))
+			{
+				break;
+			}
 
-		int packetSize = (int)(headerSize + contentLength);
-		if (packetSize > mTcpService->mMaxPacketSize)
-		{
-			return NSE_ILLEGAL_RECV_PACKET;
-		}
+			int contentLength = GetContentLength(hs);
+			if (contentLength < 0)
+			{
+				mTcpService->Log(LOG_LEVEL_ERROR, "illegal http Content-Length");
+				return NSE_ILLEGAL_RECV_PACKET;
+			}
 
-		if (mRecvBytes < packetSize)
-		{
-			return 0;
-		}
+			int packetSize = (int)(headerSize + contentLength);
+			if (packetSize <= 0 || packetSize > mTcpService->mMaxPacketSize)
+			{
+				return NSE_ILLEGAL_RECV_PACKET;
+			}
 
-		int ret = mTcpService->mIOCallbackPtr->OnReceived(
-			mLogicSocketID,
-			mRemoteIP,
-			mRemotePort,
-			mRecvPacketBuffer,
-			packetSize
-		);
-		if (ret != 0)
-		{
-			mTcpService->Log(LOG_LEVEL_ERROR, "http recv callback ret:%d", ret);
-			SetDisconnect(NSE_BE_CLOSED);
-			return NSE_BE_CLOSED;
-		}
+			if (mRecvBytes < packetSize)
+			{
+				break;
+			}
 
-		mCloseAfterSend = IsConnectionClose(hs);
-		
-		mRecvBytes -= packetSize;
-		if (mRecvBytes > 0)
-		{
-			memmove(mRecvPacketBuffer, mRecvPacketBuffer + packetSize, mRecvBytes);
+			int ret = mTcpService->mIOCallbackPtr->OnReceived(
+				mLogicSocketID,
+				mRemoteIP,
+				mRemotePort,
+				mRecvPacketBuffer,
+				packetSize
+			);
+			if (ret != 0)
+			{
+				mTcpService->Log(LOG_LEVEL_ERROR, "http recv callback ret:%d", ret);
+				SetDisconnect(NSE_BE_CLOSED);
+				return NSE_BE_CLOSED;
+			}
+
+			mCloseAfterSend = IsConnectionClose(hs);
+
+			mRecvBytes -= packetSize;
+			if (mRecvBytes > 0)
+			{
+				memmove(mRecvPacketBuffer, mRecvPacketBuffer + packetSize, mRecvBytes);
+			}
 		}
 	}
 
 	return 0;
 }
+
 
 
 WT_END
