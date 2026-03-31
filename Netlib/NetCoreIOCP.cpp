@@ -7,6 +7,8 @@
 #include "TcpAcceptor.h"
 #include "TcpClient.h"
 
+const int IOCP_SERVICE_VERSION = 10001;
+
 WT_BEGIN
 
 NetCoreIOCP::NetCoreIOCP()
@@ -81,7 +83,7 @@ int NetCoreIOCP::Initialize(int threadCount)
 			break;
 		}
 
-		Log("system.log", LOG_LEVEL_DEBUG, "create iocp thread succ, need:%d, actual:%d", threadCount, mThreads.size());
+		Log("system.log", LOG_LEVEL_DEBUG, "create iocp thread succ, need:%d, actual:%d, version:%d", threadCount, mThreads.size(), IOCP_SERVICE_VERSION);
 
 		mInitOnce = true;
 	} while (false);

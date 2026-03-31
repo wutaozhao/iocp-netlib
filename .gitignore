@@ -14,7 +14,5 @@ netliblog/
 *.user
 *.suo
 *.ncb
-*.vcproj
-*.vcxproj
 *.exe
 *.txt

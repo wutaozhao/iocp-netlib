@@ -508,7 +508,7 @@ int TcpClient::OnSendCompletion(IOContext* pContext, unsigned int nNumberOfBytes
 		ret = NSE_BE_CLOSED;
 	}
 	else {
-		mTcpService->Log(LOG_LEVEL_DEBUG, "OnSendCompletion datalen:%d", nNumberOfBytes);
+		//mTcpService->Log(LOG_LEVEL_DEBUG, "OnSendCompletion datalen:%d", nNumberOfBytes);
 	}
 
 	if (pContext->mPointer) {
@@ -569,7 +569,7 @@ int TcpClient::SplitPacket(char* pData, int dataLen)
 	int    leftSize = dataLen;
 	char*  pTemp = pData;
 
-	mTcpService->Log(LOG_LEVEL_DEBUG, "TcpClient SplitPacket begin split packet,len:%d", dataLen);
+	//mTcpService->Log(LOG_LEVEL_DEBUG, "TcpClient SplitPacket begin split packet,len:%d", dataLen);
 	while (leftSize > 0) {
 		if (mRecvPacketBuffer == NULL) {
 			mRecvPacketBuffer = (char*)mTcpService->AllocRecvPacket();
