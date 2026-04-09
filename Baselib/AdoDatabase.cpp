@@ -1,7 +1,7 @@
 
 
-#include "db/AdoDatabase.h"
-#include "tool/util.h"
+#include "../include/db/AdoDatabase.h"
+#include "../include/tool/util.h"
 
 WT_BEGIN
 
@@ -263,7 +263,7 @@ bool CADORecordset::GetFieldValue(LPCTSTR lpFieldName, string& strValue, string 
 			str = DblToStr(vtFld.dblVal);
 			break;
 		case VT_BSTR:
-			str = _com_util::ConvertBSTRToString(vtFld.bstrVal);//vtFld.bstrVal;
+			str = _bstr_t(vtFld.bstrVal);//_com_util::ConvertBSTRToString(vtFld.bstrVal);//vtFld.bstrVal;
 			break;
 		case VT_I2:
 		case VT_UI1:
@@ -362,7 +362,7 @@ bool CADORecordset::GetFieldValue(int nIndex, string& strValue, string strDateFo
 			str = DblToStr(vtFld.dblVal);
 			break;
 		case VT_BSTR:
-			str =  _com_util::ConvertBSTRToString(vtFld.bstrVal);//vtFld.bstrVal;
+			str = _bstr_t(vtFld.bstrVal);// _com_util::ConvertBSTRToString(vtFld.bstrVal);//vtFld.bstrVal;
 			break;
 		case VT_I2:
 		case VT_UI1:
@@ -460,7 +460,7 @@ bool CADORecordset::GetFieldValue(LPCTSTR lpFieldName, char* pBuffer, int nBuffe
 			str = DblToStr(vtFld.dblVal);
 			break;
 		case VT_BSTR:
-			str = _com_util::ConvertBSTRToString(vtFld.bstrVal);//vtFld.bstrVal;
+			str = _bstr_t(vtFld.bstrVal);//_com_util::ConvertBSTRToString(vtFld.bstrVal);//vtFld.bstrVal;
 			break;
 		case VT_I2:
 		case VT_UI1:
@@ -563,7 +563,7 @@ bool CADORecordset::GetFieldValue(int nIndex,  char* pBuffer, int nBufferLen, st
 			str = DblToStr(vtFld.dblVal);
 			break;
 		case VT_BSTR:
-			str =  _com_util::ConvertBSTRToString(vtFld.bstrVal);//vtFld.bstrVal;
+			str = _bstr_t(vtFld.bstrVal); //_com_util::ConvertBSTRToString(vtFld.bstrVal);//vtFld.bstrVal;
 			break;
 		case VT_I2:
 		case VT_UI1:
@@ -1058,7 +1058,7 @@ bool CADORecordset::GetChunk(FieldPtr pField, string& strValue)
 		{
 			varChunk = pField->GetChunk(ChunkSize);
 
-			str += _com_util::ConvertBSTRToString(varChunk.bstrVal);//varChunk.bstrVal;
+			str += _bstr_t(varChunk.bstrVal);//_com_util::ConvertBSTRToString(varChunk.bstrVal);//varChunk.bstrVal;
 			lngOffSet += ChunkSize;
 		}
 		catch(_com_error &e)
@@ -1896,7 +1896,7 @@ bool CADOParameter::GetValue(string& strValue, string strDateFormat)
 			strVal = DblToStr(vtVal.dblVal);
 			break;
 		case VT_BSTR:
-			strVal =  _com_util::ConvertBSTRToString(vtVal.bstrVal);//vtVal.bstrVal;
+			strVal = _bstr_t(vtVal.bstrVal);//_com_util::ConvertBSTRToString(vtVal.bstrVal);//vtVal.bstrVal;
 			break;
 		case VT_I2:
 		case VT_UI1:
