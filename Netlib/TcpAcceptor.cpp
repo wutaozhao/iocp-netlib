@@ -37,6 +37,15 @@ int TcpAcceptor::Initialize(const std::string& listenIP, unsigned short listenPo
 			break;
 		}
 
+		BOOL sopt = TRUE;
+		ret = mSocket.SetSockOpt(SOL_SOCKET, SO_REUSEADDR, (char*)&sopt, sizeof(BOOL));
+		if (ret != 0) {
+			pService->Log(LOG_LEVEL_ERROR, "set listen socket reuse addr failed, ret:%d, lastError:%d -- %d", ret, 
+				GetLastError(), WSAGetLastError());
+			ret = NSE_SYSTEM_ERROR;
+			break;
+		}
+
 		if (!mSocket.Bind(listenPort, listenIP.c_str())) {
 			pService->Log(LOG_LEVEL_ERROR, "bind socket failed, lastError:%d -- %d", GetLastError(), WSAGetLastError());
 			ret = NSE_BIND_ADDR_FAILED;
