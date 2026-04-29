@@ -85,6 +85,7 @@ int Client::StartClient(NetCore* core, int port)
 		mRemotePort = port;
 		printf("begin connect server!\n");
 		mSocketID = mNetService.ConnectServer(mRemoteIP.c_str(), mRemotePort, 1500);
+		printf("socketID:%u\n", mSocketID);
 		Log("error.log", LOG_LEVEL_ERROR, "connect get socketID:%u", mSocketID);
 
 	} while (false);
@@ -146,6 +147,9 @@ void Client::ProcessMsg()
 
 int Client::TestSend()
 {
+	if (mSocketID == 0)
+		return 0;
+
 	//printf("begin send...\n");
 	Buffer sendBuffer;
 	char* buffer = sendBuffer.getBuffer(sizeof(BaseMsgHead) + sizeof(LoginRequest));

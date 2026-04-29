@@ -76,6 +76,8 @@ public:
 
 	int GetProtocolType();
 
+	void TickUpdate();
+
 protected:
 
 	int CreateAllPool();
@@ -87,7 +89,7 @@ protected:
 	int CreateRecvPacketPool(int recvQueueSize, int maxRecvPacketSize);
 	int CreateExceptionContextPool();
 
-	void CheckStatusProc();
+	
 
 private:
 	void MakeLog(int srvID, unsigned short port, int logLevel);
@@ -139,8 +141,6 @@ private:
 	CThreadLock          mExceptionContextPoolLock;
 	DynamicMemoryPool*   mExceptionContextPoolPtr;
 
-	bool                 mStopCheckStatusThread;
-	wt::Thread*          mCheckStatusThread;
 	wt::CTimer           mCheckStatusTimer;
 	wt::CTimer           mLogStatsTimer;
 

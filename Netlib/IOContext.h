@@ -11,7 +11,8 @@ enum IOCP_OP_TYPE
 	IOCP_OP_TIMEOUT,
 	IOCP_OP_CLOSED,
 	IOCP_OP_EXIT,                                
-	IOCP_OP_CONNECTEX,                           
+	IOCP_OP_CONNECTEX,
+	IOCP_OP_CONNECTEX_TIMEOUT,
 };
 
 #pragma pack(1)

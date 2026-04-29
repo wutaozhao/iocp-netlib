@@ -14,7 +14,7 @@ public:
 
 	static CServiceInstance* GetInstance() { return ms_pInstance; }
 
-	// 入口,做一些初始化，如设置服务名，注册服务
+	//
 	virtual bool InitInstance() = 0;
 
 	virtual int RunInstance() = 0;
@@ -29,10 +29,10 @@ public:
 
 	void SetServiceName(const char* pszServiceName, const char* pszDisplayName, const char* pszDescription = "");
 
-	// 获取当前工作目录，以'/'结尾
+	// end with '/'
 	const char* GetWorkPath();
 
-	// 获取当前日志目录，工作目录\log\当前时间命名的目录，如工作目录\log\2015_03_05_15_00_00
+	// workpath\log\2015_03_05_15_00_00
 	const char* GetLogPath();
 
 private:

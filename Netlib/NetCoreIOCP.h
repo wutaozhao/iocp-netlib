@@ -8,9 +8,11 @@
 
 WT_BEGIN
 
+class TcpService;
 class NetCoreIOCP
 {
 public:
+	typedef std::map<unsigned int, TcpService*> ServiceMap;
 	NetCoreIOCP();
 	~NetCoreIOCP();
 
@@ -32,10 +34,16 @@ public:
 
 	void LogV(const char* pszLogName, unsigned int nLogLevel, const char* pszFormat, va_list args);
 
+	void AddService(int serviceID, TcpService* service);
+	void RemoveService(int serviceID);
+
 protected:
 	void IOCPWorkProc(int threadIndex);
 
 	void MakeLog();
+
+	int InitAssistThread();
+	void AssistThreadProc();
 
 private:
 	HANDLE                   mIOCPHandle;
@@ -51,6 +59,10 @@ private:
 	volatile long            mNextLogicSocketID;
 
 	volatile long            mNextServiceID;
+	CThreadLock				 mServiceMapLock;
+	ServiceMap      		 mServiceMap;
+	wt::Thread*              mAssistThread;
+	bool                     mStopAssistThread;
 
 public:
 	LogManager*              mLogger;

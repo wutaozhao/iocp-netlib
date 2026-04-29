@@ -214,9 +214,10 @@ void TcpAcceptor::OnCompleteOperation(bool bSuccess, IOContext* pPID, unsigned i
 	}
 
 	if (!acceptSuccess) {
+		unsigned int logicSocketID = pClient->mLogicSocketID;
 		pClient->CloseSocket();
 		pClient->Reset();
-		pService->RemoveClient(pClient->mLogicSocketID);
+		pService->RemoveClient(logicSocketID);
 		pService->Log(LOG_LEVEL_ERROR, "acceptor complete get error:%u", errorCode);
 	}
 
@@ -245,10 +246,11 @@ bool TcpAcceptor::AcceptConnection(TcpClient* pClient)
 			pService->Log(LOG_LEVEL_ERROR, "AcceptConnection find invalid op type:%d", pClient->mRecvContext.mOperationType);
 			break;
 		}
-
+		/*
 		int nLen = 0;
 		int nSize = sizeof(int);
 		int nRet = getsockopt(pClient->mSocket.GetHandle(), SOL_SOCKET, SO_SNDBUF, (char*)&nLen, &nSize);
+		*/
 
 		// assign the same attribute
 		SOCKET hListenSocket = mSocket.GetHandle();

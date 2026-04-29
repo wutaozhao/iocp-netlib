@@ -11,8 +11,9 @@ const int IOCP_SERVICE_VERSION = 10001;
 
 WT_BEGIN
 
-NetCoreIOCP::NetCoreIOCP()
+NetCoreIOCP::NetCoreIOCP():mStopAssistThread(false)
 {
+	mAssistThread = NULL;
 	mIOCPHandle = NULL;
 	mNextLogicSocketID = 0;
 	mNextServiceID = 0;
@@ -41,6 +42,12 @@ int NetCoreIOCP::Initialize(int threadCount)
 
 		// init Socket
 		SocketHelper::InitSocket();
+
+		ret = InitAssistThread();
+		if (ret != 0) {
+			Log("system.log", LOG_LEVEL_ERROR, "NetCoreImplementer::Initialize init assistthread failed");
+			break;
+		}
 
 		mIOCPHandle = ::CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0);
 		if (NULL == mIOCPHandle) {
@@ -95,9 +102,27 @@ int NetCoreIOCP::Initialize(int threadCount)
 	return ret;
 }
 
+void NetCoreIOCP::AddService(int serviceID, TcpService* service)
+{
+	LOCK_GUARD(mServiceMapLock);
+	mServiceMap[serviceID] = service;
+}
+
+void NetCoreIOCP::RemoveService(int serviceID)
+{
+	LOCK_GUARD(mServiceMapLock);
+	mServiceMap.erase(serviceID);
+}
+
 void NetCoreIOCP::UnInitialize()
 {
 	//
+	mStopAssistThread = true;
+	if (mAssistThread) {
+		mAssistThread->Join(200);
+		SafeDelete(mAssistThread);
+	}
+
 	if (NULL != mIOCPHandle) {
 		int count = (int)mThreads.size();
 		for (int i = 0; i < count; i++) {
@@ -132,6 +157,24 @@ void NetCoreIOCP::UnInitialize()
 	Log("system.log", LOG_LEVEL_DEBUG, "UnInitialize() exit.");
 }
 
+int NetCoreIOCP::InitAssistThread()
+{
+	if (mAssistThread) {
+		return 0;
+	}
+
+	mAssistThread = new (std::nothrow) wt::Thread(this, &NetCoreIOCP::AssistThreadProc);
+	if (!mAssistThread || !mAssistThread->Start()) {
+		Log("system.log", LOG_LEVEL_ERROR, "NetCoreIOCP::InitAssistThread start assist thread failed");
+		if (mAssistThread) {
+			delete mAssistThread;
+			mAssistThread = NULL;
+		}
+		return NSE_SYSTEM_ERROR;
+	}
+	return 0;
+}
+
 unsigned int NetCoreIOCP::GetNextServiceID()
 { 
 	return ::InterlockedIncrement(&mNextServiceID);
@@ -151,6 +194,28 @@ int NetCoreIOCP::AttachSocketToIOCP(SOCKET sock, ULONG_PTR completionKey)
 		return -1;
 	}
 	return 0;
+}
+
+void NetCoreIOCP::AssistThreadProc()
+{
+	CTimer checkTimer;
+	checkTimer.SetTimer(1000);
+	while (!mStopAssistThread) {
+		if (checkTimer.IsTimed())
+		{
+			LOCK_GUARD(mServiceMapLock);
+			ServiceMap::iterator itor = mServiceMap.begin();
+			while (itor != mServiceMap.end())
+			{
+				if (itor->second)
+				{
+					itor->second->TickUpdate();
+				}
+				++itor;
+			}
+		}
+		Sleep(100);
+	}
 }
 
 void NetCoreIOCP::IOCPWorkProc(int threadIndex)

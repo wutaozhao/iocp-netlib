@@ -21,8 +21,6 @@ TcpService::TcpService():mServiceID(0)
 
 	mIOCallbackPtr = NULL;
 
-	mStopCheckStatusThread = false;
-
 	mListenPort = 0;
 	mMaxConnection = 0;
 	mMaxPacketSize = 0;
@@ -70,12 +68,17 @@ int TcpService::StartNetService(
 	{
 		Log(LOG_LEVEL_INFO, "begin init service");
 		mMarkedStop = false;
-		mStopCheckStatusThread = false;
 		mNetCore = netCore;
 		//
 		if (mServiceID == 0) {
 			// increment
 			mServiceID = reinterpret_cast<NetCoreIOCP*>(mNetCore->GetCore())->GetNextServiceID();
+
+			NetCoreIOCP* core = GetCore();
+			if (core) {
+				core->AddService(mServiceID, this);
+			}
+
 			MakeLog(mServiceID, listenPort, logLevel);
 		}
 
@@ -98,23 +101,8 @@ int TcpService::StartNetService(
 
 		mCheckStatusTimer.SetTimer(5000);
 		mLogStatsTimer.SetTimer(60 * 1000);
-		mCheckStatusThread = new(std::nothrow) wt::Thread(this, &TcpService::CheckStatusProc);
-		if (!mCheckStatusThread)
-		{
-			Log(LOG_LEVEL_ERROR, "create check timeout thread failed");
-			ret = NSE_SYSTEM_ERROR;
-			break;
-		}
-		if (!mCheckStatusThread->Start()) {
-			delete mCheckStatusThread;
-			mCheckStatusThread = NULL;
-			Log(LOG_LEVEL_ERROR, "start check timeout thread failed");
-			ret = NSE_SYSTEM_ERROR;
-			break;
-		}
 
 		Log(LOG_LEVEL_INFO, "init service will check listen port");
-
 		if (listenPort == 0)
 			break;
 
@@ -159,6 +147,11 @@ void TcpService::StopNetService()
 	}
 	mMarkedStop = true;
 
+	NetCoreIOCP* core = GetCore();
+	if (core) {
+		core->RemoveService(mServiceID);
+	}
+
 	Log(LOG_LEVEL_INFO, "begin stop net service");
 	// stop acceptor
 	if (mTcpAcceptor != NULL && mReleaeseAcceptorEvent != NULL) {
@@ -187,10 +180,7 @@ void TcpService::StopNetService()
 	}
 
 	// stop check thread, maybe some clients are active but unref
-	Log(LOG_LEVEL_INFO, "begin stop check thread");
-	mStopCheckStatusThread = true;
-	mCheckStatusThread->Join(200);
-	Log(LOG_LEVEL_INFO, "end stop check thread");
+	Log(LOG_LEVEL_INFO, "enc cancel all client");
 
 	// wait a while for clients exit
 	CTimer exitTimer;
@@ -210,11 +200,7 @@ void TcpService::StopNetService()
 	// release all pool
 	ReleaseAllPool();
 
-#if (_WIN32_WINNT >= 0x0600)
-	Log(LOG_LEVEL_INFO, "stop finished, time:%llu", GetTickCount64());
-#else
-	Log(LOG_LEVEL_INFO, "stop finished, time:%u", GetTickCount());
-#endif
+	Log(LOG_LEVEL_INFO, "stop finished, time:%llu", GetCPUTickTime());
 }
 
 void TcpService::OnAcceptorReleased()
@@ -594,21 +580,14 @@ int TcpService::SendHttpResponse(HttpResponse& resp)
 	return clientRef->PostSendHttp(resp);
 }
 
-void TcpService::CheckStatusProc()
+void TcpService::TickUpdate()
 {
-	Log(LOG_LEVEL_INFO, "TcpService::CheckStatusProc() start");
-	while (!mStopCheckStatusThread) {
-		if (mCheckStatusTimer.IsTimed()) {
-			checkStatus();
-		}
-		else if (mLogStatsTimer.IsTimed()) {
-			logStats();
-		}
-		else {
-			Sleep(100);
-		}
+	if (mCheckStatusTimer.IsTimed()) {
+		checkStatus();
 	}
-	Log(LOG_LEVEL_INFO, "TcpService::CheckStatusProc() stop");
+	if (mLogStatsTimer.IsTimed()) {
+		logStats();
+	}
 }
 
 void TcpService::checkStatus()
@@ -738,21 +717,27 @@ unsigned int TcpService::ConnectServer(const char* ip, unsigned short port, int 
 		}
 		nSocketID = c->mLogicSocketID;
 
-		
 		if (!c->PostConnect(ip, port))
 		{
 			Log(LOG_LEVEL_ERROR, "TcpService::ConnectServer post connect failed");
+			// release client
+			c.UnRef();
+			// check can remove successfully
+			RemoveClient(nSocketID);
 			nSocketID = 0;
 			break;
 		}
 
 		if (!c->mConnctRemoteSem.Wait(waitMS)) {
-			TcpClient* client = c.get();
+			c->PostSpecial(IOCP_OP_CONNECTEX_TIMEOUT);
 			c.UnRef();
-			client->CancelIO();
-			Log(LOG_LEVEL_ERROR, "TcpService::ConnectServer wait timeout:%d", (int)port);
 			nSocketID = 0;
 			break;
+		}
+		else {
+			if (c->mConnState != CONN_CONNECTED) {
+				nSocketID = 0;
+			}
 		}
 		
 	} while (false);

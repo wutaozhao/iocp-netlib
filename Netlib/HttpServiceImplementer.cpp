@@ -64,7 +64,7 @@ int HttpServiceImplementer::Start(
 		ret = StartNetService(ip, listenPort, listenBackLog, maxConnection, maxPacketSize, packetSizeOffset,
 			clientTimeoutSec, logLevel, netCore, this, NET_PROTOCOL_HTTP);
 		if (ret != 0) {
-			LogS(netCore, LOG_LEVEL_ERROR, "StartHttpService failed, ret£º%d", ret);
+			LogS(netCore, LOG_LEVEL_ERROR, "StartHttpService failed, ret: %d", ret);
 			break;
 		}
 

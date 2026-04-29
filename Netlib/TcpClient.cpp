@@ -426,6 +426,11 @@ void TcpClient::OnCompleteOperation(bool bSuccess, IOContext* pContext, unsigned
 			else if (pContext->mOperationType == IOCP_OP_CONNECTEX) {
 				OnConnectExCompletion(0);
 			}
+			else if (pContext->mOperationType == IOCP_OP_CONNECTEX_TIMEOUT) {
+				mTcpService->Log(LOG_LEVEL_ERROR, "TcpClient::OnCompleteOperation find connect timeout, socket:%u", mLogicSocketID);
+				mTcpService->ReleaseExceptionIOContext(pContext);
+				OnConnectExCompletion(NSE_TIMEOUT);
+			}
 			else {
 				mTcpService->Log(LOG_LEVEL_ERROR, "TcpClient::OnCompleteOperation find invalid op type:%d", pContext->mOperationType);
 			}
@@ -525,6 +530,7 @@ void TcpClient::OnConnectExCompletion(unsigned int errorCode)
 		mConnState = CONN_CONNECTED;
 
 		BOOL sopt = TRUE;
+		//use SO_UPDATE_CONNECT_CONTEXT to set the socket created by ConnectEx to a standard socket
 		mSocket.SetSockOpt(SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, NULL, 0);
 		mSocket.SetSockOpt(IPPROTO_TCP, TCP_NODELAY, (char*)&sopt, sizeof(BOOL));
 		mSocket.SetSockOpt(SOL_SOCKET, SO_DONTLINGER, (char*)&sopt, sizeof(BOOL));
@@ -536,6 +542,11 @@ void TcpClient::OnConnectExCompletion(unsigned int errorCode)
 		else {
 			SetDisconnect(NSE_EXCEPTION);
 		}
+	}
+	else {
+		mConnState = CONN_CLOSED;
+		mConnctRemoteSem.Post();
+		SetDisconnect(errorCode);
 	}
 }
 
@@ -603,7 +614,7 @@ int TcpClient::SplitPacket(char* pData, int dataLen)
 
 			int packetSize = 0;
 			memcpy(&packetSize, mRecvPacketBuffer + mTcpService->mPacketSizeOffset, sizeof(int));
-			if (packetSize < sizeof(int) || packetSize > mTcpService->mMaxPacketSize) {
+			if (packetSize < 0 || packetSize < sizeof(int) || packetSize > mTcpService->mMaxPacketSize) {
 				return NSE_ILLEGAL_RECV_PACKET;
 			}
 			if (mRecvBytes < packetSize) {

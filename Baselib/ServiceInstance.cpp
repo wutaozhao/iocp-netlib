@@ -67,7 +67,7 @@ const char* CServiceInstance::GetLogPath()
 {
 	memset(m_szLogPath, 0, sizeof(m_szLogPath));
 
-	// 获取当前路径，创建时间戳文件夹
+	// 
 	char    szDirBuffer[256] = {0};
 	time_t  ulNow = {0};
 	time(&ulNow);
@@ -84,7 +84,7 @@ const char* CServiceInstance::GetLogPath()
 		tNow.tm_min,
 		tNow.tm_sec);
 
-	// 设置日志路径
+	//
 #ifdef _WIN32
 	if (GetModuleFileName(NULL, szDirBuffer, 255) == 0)
 #else

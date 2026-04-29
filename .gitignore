@@ -6,7 +6,6 @@ x64/
 Win32/
 log/
 netliblog/
-
 *.obj
 *.lib
 *.pdb
